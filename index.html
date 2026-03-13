@@ -73,7 +73,7 @@
       <div class="doc-hdr">
         <div class="hdr-brand">
           <div class="hdr-logo">
-            <img src="logo.png" alt="VB Snooker Logo">
+            <img src="assets/logo.png" alt="VB Snooker Logo">
           </div>
           <div>
             <div class="hdr-title">VB <em>Snooker</em></div>
@@ -126,33 +126,33 @@
         <div class="sec">Dados do Cliente</div>
         <div class="cg">
           <div class="fg span-4">
-          <span class="fl">Nome / Razão Social</span>
-          <input class="fi" id="cName" type="text" placeholder="Nome completo ou razão social">
-        </div>
-        <div class="fg span-2">
-          <span class="fl">CPF / CNPJ</span>
-          <input class="fi" id="cDoc" type="text" placeholder="000.000.000-00" maxlength="18">
-        </div>
-        <div class="fg span-3">
-          <span class="fl">Telefone / WhatsApp</span>
-          <input class="fi" id="cPhone" type="text" placeholder="(00) 9 0000-0000" maxlength="16">
-        </div>
-        <div class="fg span-3">
-          <span class="fl">E-mail</span>
-          <input class="fi" id="cEmail" type="email" placeholder="cliente@email.com">
-        </div>
-        <div class="fg span-2">
-          <span class="fl">Rua / Nº</span>
-          <input class="fi" id="cRua" type="text" placeholder="Ex: R. Cônego André Pieroni, 492">
-        </div>
-        <div class="fg span-2">
-          <span class="fl">Bairro</span>
-          <input class="fi" id="cBairro" type="text" placeholder="Ex: Jd. Guadalajara">
-        </div>
-        <div class="fg span-2">
-          <span class="fl">Cidade / UF</span>
-          <input class="fi" id="cCidade" type="text" placeholder="Ex: Sorocaba - SP">
-        </div>
+            <span class="fl">Nome / Razão Social</span>
+            <input class="fi" id="cName" type="text" placeholder="Nome completo ou razão social">
+          </div>
+          <div class="fg span-2">
+            <span class="fl">CPF / CNPJ</span>
+            <input class="fi" id="cDoc" type="text" placeholder="000.000.000-00" maxlength="18">
+          </div>
+          <div class="fg span-3">
+            <span class="fl">Telefone / WhatsApp</span>
+            <input class="fi" id="cPhone" type="text" placeholder="(00) 9 0000-0000" maxlength="16">
+          </div>
+          <div class="fg span-3">
+            <span class="fl">E-mail</span>
+            <input class="fi" id="cEmail" type="email" placeholder="cliente@email.com">
+          </div>
+          <div class="fg span-2">
+            <span class="fl">Rua / Nº</span>
+            <input class="fi" id="cRua" type="text" placeholder="Ex: R. Cônego André Pieroni, 492">
+          </div>
+          <div class="fg span-2">
+            <span class="fl">Bairro</span>
+            <input class="fi" id="cBairro" type="text" placeholder="Ex: Jd. Guadalajara">
+          </div>
+          <div class="fg span-2">
+            <span class="fl">Cidade / UF</span>
+            <input class="fi" id="cCidade" type="text" placeholder="Ex: Sorocaba - SP">
+          </div>
         </div>
 
         <div class="divider"></div>
@@ -215,18 +215,18 @@
         <div class="sec">Observações</div>
         <textarea class="obs" id="obs" rows="4"
           placeholder="Prazo de entrega, forma de pagamento, especificações técnicas adicionais, instruções de montagem…"></textarea>
-      
-      <!-- ASSINATURAS -->
-      <div class="sig-section">
-        <div class="sig-box">
-          <div class="sig-line"></div>
-          <span class="sig-label">Assinatura do Cliente</span>
+
+        <!-- ASSINATURAS -->
+        <div class="sig-section">
+          <div class="sig-box">
+            <div class="sig-line"></div>
+            <span class="sig-label">Assinatura do Cliente</span>
+          </div>
+          <div class="sig-box">
+            <div class="sig-line"></div>
+            <span class="sig-label">VB Snooker</span>
+          </div>
         </div>
-        <div class="sig-box">
-          <div class="sig-line"></div>
-          <span class="sig-label">VB Snooker</span>
-        </div>
-      </div>
 
       </div><!-- /doc-body -->
 
@@ -251,11 +251,19 @@
         </div>
         <div class="modal-actions">
           <button class="btn-action-hist" onclick="exportHistory()" title="Exportar Backup">
-            <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+            <svg viewBox="0 0 24 24">
+              <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"></path>
+              <polyline points="7 10 12 15 17 10"></polyline>
+              <line x1="12" y1="15" x2="12" y2="3"></line>
+            </svg>
             Exportar
           </button>
           <label class="btn-action-hist" title="Importar Backup">
-            <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+            <svg viewBox="0 0 24 24">
+              <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"></path>
+              <polyline points="17 8 12 3 7 8"></polyline>
+              <line x1="12" y1="3" x2="12" y2="15"></line>
+            </svg>
             Importar
             <input type="file" id="importFile" style="display:none" accept=".json" onchange="importHistory(event)">
           </label>
