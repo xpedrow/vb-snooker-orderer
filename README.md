@@ -36,19 +36,3 @@ Um sistema web moderno, rápido e intuitivo projetado especificamente para a **V
 ├── index.html          # Ponto de entrada do sistema
 └── README.md           # Documentação
 ```
-
-## 🌐 Deploy no Vercel
-
-O projeto foi organizado para facilitar o deploy contínuo via Vercel.
-
-1. Faça o upload da pasta para o seu repositório no **GitHub**.
-2. No painel da **Vercel**, clique em "New Project".
-3. Importe o repositório.
-4. O Vercel detectará automaticamente o `index.html` e fará o deploy instantaneamente.
-
-## 📄 Licença
-
-Este projeto é de uso exclusivo da **VB Snooker**. Todos os direitos reservados.
-
----
-Desenvolvido com ❤️ para a excelência no atendimento.
