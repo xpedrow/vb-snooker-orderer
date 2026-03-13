@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VB Snooker — Pedido de Venda</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap"
+    rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+
+  <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+
+  <div class="page">
+
+    <!-- ══ TOOLBAR ══ -->
+    <div class="toolbar" id="toolbar">
+      <div class="tbar-l">
+        <div class="tbar-brand">
+          <div class="tbar-ico">
+            <img src="assets/logo.png" alt="VB Snooker Logo">
+          </div>
+          <span class="tbar-name">VB <em>Snooker</em></span>
+        </div>
+        <span class="tbar-pill">Sistema de Pedidos</span>
+      </div>
+
+      <div class="tbar-r">
+        <button class="btn btn-ghost" id="clearBtn">
+          <svg viewBox="0 0 24 24">
+            <polyline points="1 4 1 10 7 10" />
+            <path d="M3.51 15a9 9 0 102.13-9.36L1 10" />
+          </svg>
+          Limpar
+        </button>
+        <button class="btn btn-outline" id="printBtn">
+          <svg viewBox="0 0 24 24">
+            <polyline points="6 9 6 2 18 2 18 9" />
+            <path d="M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2" />
+            <rect x="6" y="14" width="12" height="8" />
+          </svg>
+          Imprimir
+        </button>
+        <button class="btn btn-gold" id="pdfBtn">
+          <svg viewBox="0 0 24 24">
+            <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
+            <polyline points="14 2 14 8 20 8" />
+            <line x1="12" y1="18" x2="12" y2="12" />
+            <polyline points="9 15 12 18 15 15" />
+          </svg>
+          Salvar PDF
+        </button>
+        <button class="btn btn-outline" id="historyBtn" onclick="toggleHistoryModal(true)">
+          <svg viewBox="0 0 24 24">
+            <polyline points="1 4 1 10 7 10" />
+            <path d="M3.51 15a9 9 0 102.13-9.36L1 10" />
+          </svg>
+          Histórico
+        </button>
+      </div>
+    </div>
+
+    <!-- ══ DOCUMENT ══ -->
+    <div id="document" x-ref="document">
+      <div class="left-accent"></div>
+      <!-- HEADER (fixo, não editável) -->
+      <div class="doc-hdr">
+        <div class="hdr-brand">
+          <div class="hdr-logo">
+            <img src="logo.png" alt="VB Snooker Logo">
+          </div>
+          <div>
+            <div class="hdr-title">VB <em>Snooker</em></div>
+            <div class="hdr-sub">Mesas de Bilhar · Pebolim · Tênis de Mesa · Desde 1993</div>
+          </div>
+        </div>
+
+        <div class="hdr-info">
+          <div class="hdr-row">
+            <svg viewBox="0 0 24 24">
+              <path
+                d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 8.82 19.79 19.79 0 01.07 4.21 2 2 0 012 2h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45 12.84 12.84 0 002.81.7A2 2 0 0122 16.92z" />
+            </svg>
+            <span class="val">(15) 99789-6366</span>
+          </div>
+          <div class="hdr-row">
+            <svg viewBox="0 0 24 24">
+              <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
+              <polyline points="22,6 12,13 2,6" />
+            </svg>
+            <span class="sub">contato@vbsnooker.com.br</span>
+          </div>
+          <div class="hdr-row">
+            <svg viewBox="0 0 24 24">
+              <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z" />
+              <circle cx="12" cy="10" r="3" />
+            </svg>
+            <span class="sub">R. Cônego André Pieroni, 492 — Sorocaba-SP</span>
+          </div>
+          <div class="cnpj-tag">CNPJ: 49.545.015/0001-24</div>
+        </div>
+      </div>
+
+      <!-- TITLE BAND -->
+      <div class="doc-band">
+        <div class="band-l">
+          <span class="band-title">Pedido de Venda</span>
+          <span class="band-num" id="oNum">— Nº ----</span>
+        </div>
+        <div class="band-r">
+          <label for="oDate">Data:</label>
+          <input type="text" id="oDate" placeholder="00/00/0000" maxlength="10">
+        </div>
+      </div>
+
+      <!-- BODY -->
+      <div class="doc-body" id="docBody">
+
+        <!-- DADOS DO CLIENTE -->
+        <div class="sec">Dados do Cliente</div>
+        <div class="cg">
+          <div class="fg span-4">
+          <span class="fl">Nome / Razão Social</span>
+          <input class="fi" id="cName" type="text" placeholder="Nome completo ou razão social">
+        </div>
+        <div class="fg span-2">
+          <span class="fl">CPF / CNPJ</span>
+          <input class="fi" id="cDoc" type="text" placeholder="000.000.000-00" maxlength="18">
+        </div>
+        <div class="fg span-3">
+          <span class="fl">Telefone / WhatsApp</span>
+          <input class="fi" id="cPhone" type="text" placeholder="(00) 9 0000-0000" maxlength="16">
+        </div>
+        <div class="fg span-3">
+          <span class="fl">E-mail</span>
+          <input class="fi" id="cEmail" type="email" placeholder="cliente@email.com">
+        </div>
+        <div class="fg span-2">
+          <span class="fl">Rua / Nº</span>
+          <input class="fi" id="cRua" type="text" placeholder="Ex: R. Cônego André Pieroni, 492">
+        </div>
+        <div class="fg span-2">
+          <span class="fl">Bairro</span>
+          <input class="fi" id="cBairro" type="text" placeholder="Ex: Jd. Guadalajara">
+        </div>
+        <div class="fg span-2">
+          <span class="fl">Cidade / UF</span>
+          <input class="fi" id="cCidade" type="text" placeholder="Ex: Sorocaba - SP">
+        </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <!-- ITENS DO PEDIDO -->
+        <div class="sec">Itens do Pedido</div>
+        <div class="tw">
+          <table class="ot">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Produto</th>
+                <th>Descrição / Especificação</th>
+                <th class="r">Valor Unit.</th>
+                <th class="c">Qtd.</th>
+                <th class="r">Total</th>
+                <th class="hide-print"></th>
+              </tr>
+            </thead>
+            <tbody id="rows"></tbody>
+          </table>
+        </div>
+
+        <button class="btn-add hide-print" id="addBtn">
+          <svg viewBox="0 0 24 24">
+            <line x1="12" y1="5" x2="12" y2="19" />
+            <line x1="5" y1="12" x2="19" y2="12" />
+          </svg>
+          Adicionar item
+        </button>
+
+        <!-- TOTALS -->
+        <div class="totals-wrap">
+          <div class="totals-box">
+            <div class="tot-row">
+              <span class="tot-lbl">Subtotal</span>
+              <span class="tot-val" id="sub">R$ 0,00</span>
+            </div>
+            <div class="tot-row">
+              <span class="tot-lbl">Desconto</span>
+              <span class="tot-val">
+                <span class="disc-wrap hide-print">
+                  <span class="disc-prefix">R$</span>
+                  <input class="disc-input" type="number" id="discIn" value="0" min="0" step="0.01">
+                </span>
+                <span id="discPrint"
+                  style="display:none; font-family:'DM Mono',monospace; font-weight:600; color:#0e0e08"></span>
+              </span>
+            </div>
+            <div class="tot-row grand">
+              <span class="tot-lbl">Total Geral</span>
+              <span class="tot-val" id="grand">R$ 0,00</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <!-- OBSERVAÇÕES -->
+        <div class="sec">Observações</div>
+        <textarea class="obs" id="obs" rows="4"
+          placeholder="Prazo de entrega, forma de pagamento, especificações técnicas adicionais, instruções de montagem…"></textarea>
+      
+      <!-- ASSINATURAS -->
+      <div class="sig-section">
+        <div class="sig-box">
+          <div class="sig-line"></div>
+          <span class="sig-label">Assinatura do Cliente</span>
+        </div>
+        <div class="sig-box">
+          <div class="sig-line"></div>
+          <span class="sig-label">VB Snooker</span>
+        </div>
+      </div>
+
+      </div><!-- /doc-body -->
+
+      <!-- DOC FOOTER -->
+      <div class="doc-foot">
+        <span class="foot-txt">VB Snooker Comércio de Materiais Esportivos LTDA · CNPJ 49.545.015/0001-24</span>
+        <span class="foot-brand">VB Snooker</span>
+        <span class="foot-txt" id="footDate"></span>
+      </div>
+
+    </div><!-- /#document -->
+
+  </div><!-- /.page -->
+
+  <!-- MODAL HISTÓRICO -->
+  <div class="modal-overlay" id="historyModal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <div class="modal-title-group">
+          <h3>Histórico de Pedidos</h3>
+          <span class="hist-count">Últimos 100 pedidos</span>
+        </div>
+        <div class="modal-actions">
+          <button class="btn-action-hist" onclick="exportHistory()" title="Exportar Backup">
+            <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+            Exportar
+          </button>
+          <label class="btn-action-hist" title="Importar Backup">
+            <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+            Importar
+            <input type="file" id="importFile" style="display:none" accept=".json" onchange="importHistory(event)">
+          </label>
+          <button class="close-modal" onclick="toggleHistoryModal(false)">&times;</button>
+        </div>
+      </div>
+      <div class="modal-body" id="historyList">
+        <!-- Lista de pedidos via JS -->
+      </div>
+    </div>
+  </div>
+
+  <script src="js/utils.js"></script>
+  <script src="js/logo.js"></script>
+  <script src="js/history-manager.js"></script>
+  <script src="js/pdf-handler.js"></script>
+  <script src="js/main.js"></script>
+</body>
+
+</html>
