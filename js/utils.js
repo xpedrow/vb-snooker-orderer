@@ -10,15 +10,14 @@ function fmt(n) {
 }
 
 /**
- * Segurança: Limpeza agressiva de strings para evitar qualquer tag HTML
+ * Segurança: Limpeza de strings para evitar tags HTML
  * @param {string} text - O texto a ser limpo
  * @returns {string} - Texto limpo de tags
  */
 function sanitize(text) {
   if (!text) return '';
-  // Remove qualquer coisa entre < > (tags HTML) e remove os próprios símbolos
-  return text.replace(/<[^>]*>?/gm, '')
-             .replace(/[<>]/g, ''); // Garante a remoção de < ou > avulsos
+  // Remove tags HTML mas preserva o conteúdo e espaços
+  return text.replace(/<[^>]*>?/gm, '');
 }
 
 /**
@@ -40,7 +39,7 @@ function formatText(text, mode) {
         return word.charAt(0).toUpperCase() + word.slice(1);
       }
       return '';
-    }).join(' ');
+    }).filter(w => w !== '').join(' ');
   }
 
   if (mode === 'sentence') {
@@ -55,11 +54,14 @@ function formatText(text, mode) {
     val = val.replace(/\s+([.,;:!?])/g, '$1');
     
     // 4. Garante espaço DEPOIS de pontuação: "casa.azul" -> "casa. azul"
-    // (Não aplica se for número como 1.500)
-    val = val.replace(/([.,;:!?])(?=[a-zA-Záàâãéèêíïóôõöúçñ])/g, '$1 ');
+    const lower = 'a-záàâãéèêíïóôõöúçñ';
+    const upper = 'A-ZÁÀÂÃÉÈÊÍÏÓÔÕÖÚÇÑ';
+    const regexAfter = new RegExp(`([.,;:!?])(?=[${lower}${upper}])`, 'g');
+    val = val.replace(regexAfter, '$1 ');
     
     // 5. Maiúscula após pontuação final (. ! ?)
-    val = val.replace(/([.!?]\s+)([a-záàâãéèêíïóôõöúçñ])/g, (m, p1, p2) => p1 + p2.toUpperCase());
+    const regexPost = new RegExp(`([.!?]\\s+)([${lower}])`, 'g');
+    val = val.replace(regexPost, (m, p1, p2) => p1 + p2.toUpperCase());
 
     return val;
   }
@@ -87,7 +89,9 @@ function applyMask(type, e) {
     v = v.replace(/\D/g, '');
   }
   
-  e.target.value = v;
+  if (e.target.value !== v) {
+    e.target.value = v;
+  }
 }
 
 /**
@@ -100,9 +104,17 @@ function initMasks() {
     el.addEventListener('input', function(e) {
       // 1. Bloqueio imediato de tags em campos de texto
       if (this.type === 'text' || this.type === 'email' || this.tagName === 'TEXTAREA') {
-        const cleaned = sanitize(this.value);
-        if (this.value !== cleaned) {
-          this.value = cleaned; // Remove na hora se tentar digitar < ou >
+        // Ignora sanitização temporária se for um campo que aceita texto livre
+        // A sanitização real ocorre no Blur ou antes de salvar/exportar
+        const isFreeText = this.id === 'cName' || this.classList.contains('row-desc') || this.id === 'obs' || this.id === 'cRua' || this.id === 'cBairro' || this.id === 'cCidade';
+        
+        if (!isFreeText) {
+          const cleaned = sanitize(this.value);
+          if (this.value !== cleaned) {
+            const start = this.selectionStart;
+            this.value = cleaned;
+            this.setSelectionRange(start, start);
+          }
         }
       }
 
@@ -116,7 +128,9 @@ function initMasks() {
         } else if (v.length > 2) {
           v = `(${v.slice(0,2)}) ${v.slice(2)}`;
         }
-        this.value = v;
+        if (this.value !== v) {
+          this.value = v;
+        }
       }
       if (this.classList.contains('disc-input') || this.classList.contains('mn') || this.classList.contains('mnc')) {
         applyMask('number', e);
@@ -170,7 +184,15 @@ function secureNewInputs(container) {
   inputs.forEach(input => {
     input.addEventListener('input', function(e) {
       if (this.type === 'text' || this.tagName === 'TEXTAREA') {
-        this.value = sanitize(this.value);
+        const isFreeText = this.classList.contains('row-desc') || this.classList.contains('ti');
+        if (!isFreeText) {
+          const cleaned = sanitize(this.value);
+          if (this.value !== cleaned) {
+            const start = this.selectionStart;
+            this.value = cleaned;
+            this.setSelectionRange(start, start);
+          }
+        }
       }
       if (this.classList.contains('mn') || this.classList.contains('mnc')) {
         applyMask('number', e);
