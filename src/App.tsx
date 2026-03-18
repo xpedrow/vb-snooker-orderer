@@ -8,7 +8,7 @@ import OrderTable from './components/OrderTable';
 import Totals from './components/Totals';
 import Observations from './components/Observations';
 import HistoryModal from './components/HistoryModal';
-import { Printer, RotateCcw, History as HistoryIcon } from 'lucide-react';
+import { Printer, RotateCcw, History as HistoryIcon, Download, FileDown } from 'lucide-react';
 
 const HISTORY_KEY = 'vbs_orders_history';
 
@@ -25,13 +25,14 @@ const App: React.FC = () => {
   const [state, setState] = useState<OrderState>(() => {
     const saved = localStorage.getItem('vbs_last_order');
     if (saved) return JSON.parse(saved);
-    
+
     const lastNum = localStorage.getItem('vbs_last_order_num') || '0';
     const nextNum = (parseInt(lastNum) + 1).toString().padStart(4, '0');
     return { ...INITIAL_STATE, orderNumber: nextNum };
   });
 
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
+  const [isExporting, setIsExporting] = useState(false);
   const componentRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -111,29 +112,15 @@ const App: React.FC = () => {
     setState(prev => ({ ...prev, orderNumber: nextNum }));
   };
 
-  // Dynamic Scaling Logic for edge cases
-  const [scale, setScale] = useState(1);
-  
-  useEffect(() => {
-    if (componentRef.current && (state.items.length > 15 || state.observations.length > 200)) {
-      const height = componentRef.current.scrollHeight;
-      const a4Height = 1122; // ~297mm at 96dpi
-      if (height > a4Height) {
-        const newScale = Math.max(0.85, a4Height / height);
-        setScale(newScale);
-      } else {
-        setScale(1);
-      }
-    } else {
-      setScale(1);
-    }
-  }, [state.items.length, state.observations]);
+  // Dynamic Scaling Logic removed as per instruction for fixed A4 dimensions
 
-  // Lógica de Impressão
   const handlePrint = useReactToPrint({
     content: () => componentRef.current,
     onBeforeGetContent: async () => {
-      // Sanitização Profissional Proativa antes da captura
+      // 1. Enter Clean State
+      setIsExporting(true);
+      
+      // 2. Proactive Sanitization
       setState(prev => ({
         ...prev,
         client: Object.fromEntries(
@@ -149,11 +136,17 @@ const App: React.FC = () => {
 
       const filtered = filterVisibleItems(state.items);
       if (filtered.length === 0) {
+        setIsExporting(false);
         alert('Adicione ao menos um produto válido.');
         throw new Error('Cancel print');
       }
+
+      // Wait for React to render without placeholders
+      await new Promise(resolve => setTimeout(resolve, 150));
     },
     onAfterPrint: () => {
+      // 3. Restore UI and Log results
+      setIsExporting(false);
       saveToHistory();
       incrementOrder();
     },
@@ -174,31 +167,36 @@ const App: React.FC = () => {
             <img src="/assets/logo.png" alt="Logo" className="w-full h-full object-contain" />
           </div>
           <div className="flex flex-col">
-            <span className="text-white font-brand font-bold text-lg leading-none tracking-widest">VB <span className="text-gold">SNOOKER</span></span>
-            <span className="text-zinc-500 text-[0.6rem] uppercase tracking-[0.2em]">Order System v2.0</span>
+            <span className="text-white font-brand font-bold text-lg leading-none tracking-widest antialiased">VB <span className="text-gold">SNOOKER</span></span>
+            <span className="text-zinc-500 text-[0.6rem] uppercase tracking-[0.2em] antialiased">Order System v2.0</span>
           </div>
         </div>
 
-        <div className="flex items-center gap-3">
-          <button onClick={clearAll} className="flex items-center gap-2 px-4 py-2 text-zinc-400 hover:text-white transition-colors text-xs font-bold uppercase tracking-widest">
-            <RotateCcw size={14} /> Limpar
+        <div className="flex flex-wrap items-center justify-end gap-2 sm:gap-3 w-full sm:w-auto">
+          <button onClick={clearAll} className="flex items-center gap-2 px-3 py-2 text-zinc-400 hover:text-white transition-colors text-[0.65rem] font-bold uppercase tracking-widest">
+            <RotateCcw size={14} /> <span className="hidden xs:inline">Limpar</span>
           </button>
-          <button onClick={() => setIsHistoryOpen(true)} className="flex items-center gap-2 px-4 py-2 border border-zinc-700 rounded-md text-zinc-300 hover:bg-zinc-800 transition-all text-xs font-bold uppercase tracking-widest">
-            <HistoryIcon size={14} /> Histórico
+          <button onClick={() => setIsHistoryOpen(true)} className="flex items-center gap-2 px-3 py-2 border border-zinc-700 rounded-md text-zinc-300 hover:bg-zinc-800 transition-all text-[0.65rem] font-bold uppercase tracking-widest">
+            <HistoryIcon size={14} /> <span className="hidden xs:inline">Histórico</span>
           </button>
-          <button onClick={() => handlePrint()} className="flex items-center gap-2 px-6 py-2 bg-gradient-to-r from-gold to-green-2 text-white rounded-md hover:shadow-[0_0_20px_rgba(18,161,95,0.4)] transition-all text-xs font-bold uppercase tracking-widest">
-            <Printer size={14} /> Imprimir / PDF
-          </button>
+          <div className="flex items-center gap-2">
+            <button onClick={() => handlePrint()} className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-[#008c4a] to-[#004d29] text-white rounded-md hover:shadow-[0_0_15px_rgba(0,140,74,0.4)] transition-all text-[0.65rem] font-bold uppercase tracking-widest shadow-lg">
+              <Printer size={14} /> <span>Imprimir</span>
+            </button>
+            <button onClick={() => handlePrint()} className="flex items-center gap-2 px-4 py-2 bg-zinc-800 border border-zinc-700 text-white rounded-md hover:bg-zinc-700 transition-all text-[0.65rem] font-bold uppercase tracking-widest shadow-lg group">
+              <FileDown size={14} className="text-gold group-hover:scale-110 transition-transform" /> 
+              <span>Salvar PDF</span>
+            </button>
+          </div>
         </div>
       </div>
 
-      {/* DOCUMENT AREA */}
-      <div className="relative flex-1 flex flex-col items-center">
+      {/* DOCUMENT AREA - Stabilized with fixed height and scroll */}
+      <div className="relative flex-1 flex flex-col items-center overflow-y-auto h-[85vh] py-8 print:h-auto print:overflow-visible print:py-0">
         <div
           ref={componentRef}
           id="section-to-print"
-          style={{ transform: scale !== 1 ? `scale(${scale})` : undefined, transformOrigin: 'top center' }}
-          className="document-page relative flex flex-col justify-between print:bg-white min-h-[297mm] h-auto overflow-hidden"
+          className="document-page"
         >
           <div className="flex flex-col flex-1">
             {/* ACCENT BAR */}
@@ -223,38 +221,40 @@ const App: React.FC = () => {
               </div>
             </div>
 
-            <div className={`flex flex-col flex-1 p-[10px_44px_20px_48px] bg-white print:p-0 ${state.items.length > 5 ? 'gap-2' : 'gap-4'}`}>
+            <div className={`print-content-area flex flex-col flex-1 p-[10px_44px_20px_48px] bg-white print:p-0 ${state.items.length > 8 ? 'gap-0.5' : 'gap-4'}`}>
               <div className="flex-shrink-0">
-                <ClientInfo data={state.client} onChange={handleClientChange} />
+                <ClientInfo data={state.client} onChange={handleClientChange} isExporting={isExporting} />
               </div>
-              
-              <div className="flex-grow min-h-0">
+
+              <div className="flex-grow flex flex-col min-h-0">
                 <OrderTable
                   items={state.items}
                   onUpdate={handleItemUpdate}
                   onAdd={addItem}
                   onRemove={removeItem}
+                  isExporting={isExporting}
                 />
               </div>
 
               {/* DYNAMIC FOOTER GROUP (COLLISION PREVENTION) */}
-              <div className="mt-auto flex flex-col flex-shrink gap-[4px] border-t border-zinc-100 pt-4 print:pt-2">
+              <div className="mt-auto flex flex-col flex-shrink-1 gap-1 border-t border-zinc-100 pt-4 print:pt-2 print:gap-0.5">
                 <Totals
                   subtotal={subtotal}
                   discount={state.discount}
                   onDiscountChange={(val) => setState(prev => ({ ...prev, discount: val }))}
-                  isCompressed={state.items.length > 5}
+                  isCompressed={state.items.length > 8}
                 />
                 <Observations
                   value={state.observations}
                   onChange={(val) => setState(prev => ({ ...prev, observations: val }))}
+                  isExporting={isExporting}
                 />
               </div>
             </div>
           </div>
 
-          {/* FOOTER - ALIGNED AT BOTTOM */}
-          <div className="mt-auto relative py-6 px-[48px] border-t border-zinc-100 bg-[#F4F4F5] flex justify-between items-center text-[0.65rem] text-[#004a27] font-bold uppercase tracking-wider print:bg-transparent print:border-t print:border-zinc-200 print:px-[10mm] print:pb-8 flex-shrink-0">
+          {/* FOOTER - ALIGNED AT BOTTOM OF PAGE */}
+          <div className="doc-footer mt-auto relative py-6 px-[48px] border-t border-zinc-100 bg-[#F4F4F5] flex justify-between items-center text-[0.65rem] text-[#004a27] font-bold uppercase tracking-wider print:bg-transparent print:border-t print:border-zinc-200 print:px-[10mm] print:pb-8 flex-shrink-0">
             <div className="flex flex-col gap-1">
               <span>VB Snooker Comércio de Materiais Esportivos LTDA</span>
               <span className="opacity-70 text-[0.55rem] text-zinc-800">Sorocaba-SP · Brasileira · Desde 1993</span>
@@ -265,9 +265,9 @@ const App: React.FC = () => {
         </div>
       </div>
 
-      <HistoryModal 
-        isOpen={isHistoryOpen} 
-        onClose={() => setIsHistoryOpen(false)} 
+      <HistoryModal
+        isOpen={isHistoryOpen}
+        onClose={() => setIsHistoryOpen(false)}
         onSelect={handleHistorySelect}
       />
     </div>

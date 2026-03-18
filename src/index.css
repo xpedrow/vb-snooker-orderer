@@ -14,9 +14,10 @@ body {
 
 /* Document Page base */
 .document-page {
-  width: 800px;
+  width: 100%;
+  max-width: 800px;
   min-height: 1122px;
-  @apply bg-white mx-auto my-10 relative overflow-hidden;
+  @apply bg-white mx-auto my-5 relative overflow-hidden flex flex-col justify-between;
   box-shadow:
     0 0 0 1px rgba(18, 161, 95, .16),
     0 6px 50px rgba(0, 0, 0, .42),
@@ -45,49 +46,57 @@ body {
   }
 
   #section-to-print {
-    position: absolute !important;
-    left: 0 !important;
-    top: 0 !important;
+    position: fixed !important;
+    left: 1px !important;
+    top: 1px !important;
     margin: 0 !important;
     padding: 0 !important;
     width: 210mm !important;
-    min-width: 210mm !important;
-    max-width: none !important;
     height: 297mm !important;
-    min-height: 297mm !important;
     max-height: 297mm !important;
+    max-width: none !important;
     display: flex !important;
     flex-direction: column !important;
     background: white !important;
     box-shadow: none !important;
     border: none !important;
     outline: none !important;
-    /* Soft scale fallback for total prevention of page break */
-    transform: scale(0.95) !important; 
-    transform-origin: top center !important;
+    transform: none !important;
     overflow: hidden !important;
+    z-index: 9999;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    font-variant-ligatures: common-ligatures;
   }
 
   /* Force Full Width Banners (Bleed Management) */
   .doc-hdr, .doc-band {
-    width: 100% !important;
-    min-width: 100% !important;
-    padding-left: 10mm !important;
-    padding-right: 10mm !important;
+    width: 210mm !important;
+    min-width: 210mm !important;
+    max-width: 210mm !important;
     box-sizing: border-box !important;
     margin-left: 0 !important;
     margin-right: 0 !important;
     box-shadow: none !important;
     border: none !important;
-  }
-
-  /* Compressed Spacing for Print */
-  .section {
-    margin-top: 2mm !important;
-    margin-bottom: 2mm !important;
     padding-left: 10mm !important;
     padding-right: 10mm !important;
-    break-inside: avoid;
+  }
+
+  /* Dynamic Spacing for Print Content Area */
+  .print-content-area {
+    width: 100% !important;
+    flex-grow: 1 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    padding-bottom: 25mm !important; /* Space for the absolute footer */
+    gap: 1mm !important;
+  }
+
+  /* Content inner alignment */
+  .print-content-area > div {
+    padding-left: 10mm !important;
+    padding-right: 10mm !important;
   }
 
   /* Table Reset */
@@ -97,16 +106,32 @@ body {
   }
 
   .ot-row td {
-    padding-top: 2px !important;
-    padding-bottom: 2px !important;
-    border-bottom: 1px solid #e0dbd0 !important;
+    padding-top: 1px !important;
+    padding-bottom: 1px !important;
+    border-bottom: 1px solid #eee !important;
   }
 
   /* Hide placeholders and UI */
-  .toolbar, .hide-print, button, .lucide, input::placeholder, textarea::placeholder {
+  .toolbar, .hide-print, button, .lucide {
     display: none !important;
     visibility: hidden !important;
+  }
+
+  /* Clean Input Printing */
+  input::placeholder, textarea::placeholder {
     color: transparent !important;
+    opacity: 0 !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  input, textarea {
+    border: none !important;
+    background: transparent !important;
+    outline: none !important;
+    box-shadow: none !important;
+    -webkit-appearance: none;
+    appearance: none;
   }
 
   /* Force exact colors */
@@ -115,5 +140,21 @@ body {
     print-color-adjust: exact !important;
     box-shadow: none !important;
     text-shadow: none !important;
+  }
+
+  /* Footer at bottom of A4 - Fixed positioning for consistent location */
+  .doc-footer {
+    position: absolute !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    width: 210mm !important;
+    min-width: 210mm !important;
+    padding: 5mm 10mm 10mm 10mm !important;
+    background: #f4f4f5 !important;
+    border-top: 1px solid #eee !important;
+    box-sizing: border-box !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+    color: #3f3f46 !important; /* Dark Zinc for high contrast on paper */
   }
 }

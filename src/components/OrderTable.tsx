@@ -8,9 +8,10 @@ interface Props {
   onUpdate: (id: string, field: keyof OrderItem, value: any) => void;
   onAdd: () => void;
   onRemove: (id: string) => void;
+  isExporting?: boolean;
 }
 
-const OrderTable: React.FC<Props> = ({ items, onUpdate, onAdd, onRemove }) => {
+const OrderTable: React.FC<Props> = ({ items, onUpdate, onAdd, onRemove, isExporting }) => {
   const isCompressed = items.length > 5;
   const isUltraCompressed = items.length > 10;
 
@@ -38,8 +39,13 @@ const OrderTable: React.FC<Props> = ({ items, onUpdate, onAdd, onRemove }) => {
             </tr>
           </thead>
           <tbody>
-            {items.map((item, index) => (
-              <tr key={item.id} className="ot-row group transition-colors border-b border-[#e0dbd0] odd:bg-white even:bg-[#F4F4F5] hover:bg-[#eeeae0]">
+            {items.map((item, index) => {
+              const isItemEmpty = !item.product.trim() && toNumber(item.unitValue) === 0;
+              return (
+                <tr 
+                  key={item.id} 
+                  className={`ot-row group transition-colors border-b border-[#e0dbd0] odd:bg-white even:bg-[#F4F4F5] hover:bg-[#eeeae0] ${isItemEmpty ? 'print:hidden' : ''}`}
+                >
                 <td className={`${rowPadding} vertical-middle`}>
                   <div className={`${isCompressed ? 'w-[18px] h-[18px]' : 'w-[22px] h-[22px]'} rounded-full bg-[#0A0A0A] text-[#12A15F] font-mono ${isCompressed ? 'text-[0.55rem]' : 'text-[0.62rem]'} flex items-center justify-center m-auto`}>
                     {index + 1}
@@ -52,7 +58,7 @@ const OrderTable: React.FC<Props> = ({ items, onUpdate, onAdd, onRemove }) => {
                     value={item.product}
                     onChange={(e) => onUpdate(item.id, 'product', e.target.value)}
                     onBlur={(e) => onUpdate(item.id, 'product', formatTitle(e.target.value))}
-                    placeholder="Nome do produto"
+                    placeholder={isExporting ? "" : "Nome do produto"}
                   />
                 </td>
                 <td className={`${rowPadding} vertical-middle`}>
@@ -62,7 +68,7 @@ const OrderTable: React.FC<Props> = ({ items, onUpdate, onAdd, onRemove }) => {
                     value={item.description}
                     onChange={(e) => onUpdate(item.id, 'description', e.target.value)}
                     onBlur={(e) => onUpdate(item.id, 'description', formatSentence(e.target.value))}
-                    placeholder="Detalhes técnicos..."
+                    placeholder={isExporting ? "" : "Detalhes técnicos..."}
                   />
                 </td>
                 <td className={`${rowPadding} vertical-middle`}>
@@ -71,7 +77,7 @@ const OrderTable: React.FC<Props> = ({ items, onUpdate, onAdd, onRemove }) => {
                     type="text"
                     value={item.unitValue}
                     onChange={(e) => onUpdate(item.id, 'unitValue', e.target.value)}
-                    placeholder="0,00"
+                    placeholder={isExporting ? "" : "0,00"}
                   />
                 </td>
                 <td className={`${rowPadding} vertical-middle`}>
@@ -80,7 +86,7 @@ const OrderTable: React.FC<Props> = ({ items, onUpdate, onAdd, onRemove }) => {
                     type="text"
                     value={item.quantity}
                     onChange={(e) => onUpdate(item.id, 'quantity', e.target.value)}
-                    placeholder="1"
+                    placeholder={isExporting ? "" : "1"}
                   />
                 </td>
                 <td className={`${rowPadding} vertical-middle ${fontSize} text-right font-mono font-bold text-[#0E844E]`}>
@@ -95,7 +101,7 @@ const OrderTable: React.FC<Props> = ({ items, onUpdate, onAdd, onRemove }) => {
                   </button>
                 </td>
               </tr>
-            ))}
+            );})}
           </tbody>
         </table>
       </div>

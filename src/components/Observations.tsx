@@ -4,9 +4,10 @@ import { formatSentence } from '../utils/format';
 interface Props {
   value: string;
   onChange: (val: string) => void;
+  isExporting?: boolean;
 }
 
-const Observations: React.FC<Props> = ({ value, onChange }) => {
+const Observations: React.FC<Props> = ({ value, onChange, isExporting }) => {
   return (
     <div className="section mt-2 flex-shrink-1 min-h-0 flex flex-col">
       <div className="sec-title flex items-center gap-3 mb-2">
@@ -19,7 +20,7 @@ const Observations: React.FC<Props> = ({ value, onChange }) => {
         value={value}
         onChange={(e) => onChange(e.target.value)}
         onBlur={(e) => onChange(formatSentence(e.target.value))}
-        placeholder="Informações sobre prazo, pagamento, montagem ou frete..."
+        placeholder={isExporting ? "" : "Informações sobre prazo, pagamento, montagem ou frete..."}
       />
       
       <div className="sig-area flex justify-between items-end mt-8 mb-2 px-4 print:mt-6">
