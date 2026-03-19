@@ -23,7 +23,7 @@ const Totals: React.FC<Props> = ({ subtotal, discount, onDiscountChange, isCompr
         <div className="flex justify-between items-center px-4">
           <span className="text-[0.62rem] uppercase font-bold text-[#3F3F46] tracking-[0.22em]">Desconto</span>
           <div className="flex items-center gap-1">
-            <span className="text-[0.75rem] font-mono font-bold text-zinc-400">R$</span>
+            <span className="text-[0.75rem] font-mono font-bold text-zinc-400 hide-print">R$</span>
             <input 
               className={`w-20 bg-transparent border-b border-zinc-200 px-1 text-right font-mono ${isCompressed ? 'text-[0.8rem]' : 'text-[0.95rem]'} font-bold outline-none focus:border-[#12A15F] hide-print`}
               type="text" 

@@ -13,7 +13,7 @@ const ClientInfo: React.FC<Props> = ({ data, onChange, isExporting }) => {
   const inputStyle = "w-full bg-transparent border-b border-[#008c4a26] py-1 text-[0.85rem] text-black font-medium outline-none focus:border-[#12A15F] transition-all cursor-pointer";
 
   return (
-    <div className="section mb-6">
+    <div className="section mt-2 mb-4">
       <div className="sec-title flex items-center gap-3 mb-5">
         <span className="text-[0.62rem] font-extrabold text-[#3F3F46] uppercase tracking-[0.22em]">Dados do Cliente</span>
         <div className="flex-1 h-[1px] bg-gradient-to-r from-[#008c4a26] to-transparent"></div>
@@ -22,12 +22,16 @@ const ClientInfo: React.FC<Props> = ({ data, onChange, isExporting }) => {
       <div className="grid grid-cols-12 gap-x-8 gap-y-5">
         <div className={`col-span-12 sm:col-span-8 ${!data.name.trim() ? 'print:hidden' : ''}`}>
           <label className={labelStyle}>Nome / Razão Social</label>
-          <input 
-            className={inputStyle}
-            type="text"
+          <textarea 
+            className={`${inputStyle} block resize-none overflow-hidden min-h-[1.5rem]`}
+            rows={1}
             value={data.name}
             onChange={(e) => onChange('name', e.target.value)}
             onBlur={(e) => onChange('name', formatTitle(e.target.value))}
+            onInput={(e: any) => {
+              e.target.style.height = 'auto';
+              e.target.style.height = `${e.target.scrollHeight}px`;
+            }}
             placeholder={isExporting ? "" : "Ex: João Silva ou Empresa LTDA"}
           />
         </div>
@@ -63,38 +67,49 @@ const ClientInfo: React.FC<Props> = ({ data, onChange, isExporting }) => {
           />
         </div>
 
-        <div className={`col-span-12 sm:col-span-5 ${!data.rua.trim() ? 'print:hidden' : ''}`}>
-          <label className={labelStyle}>Rua / Nº</label>
-          <input 
-            className={inputStyle}
-            type="text"
-            value={data.rua}
-            onChange={(e) => onChange('rua', e.target.value)}
-            onBlur={(e) => onChange('rua', formatTitle(e.target.value))}
-            placeholder={isExporting ? "" : "Ex: R. Cônego André Pieroni, 492"}
-          />
-        </div>
-        <div className={`col-span-2 flex flex-col gap-1.5 ${!data.bairro.trim() ? 'print:hidden' : ''}`}>
-          <label className="text-[0.59rem] text-zinc-500 font-bold uppercase tracking-wider">Bairro</label>
-          <input 
-            className="w-full bg-transparent border-b-[1.5px] border-zinc-200 py-1.5 text-[0.9rem] font-medium text-black transition-colors focus:border-[#12A15F] outline-none placeholder:italic placeholder:text-[#A1A1AA] placeholder:font-normal placeholder:text-[0.83rem]"
-            type="text" 
-            value={data.bairro}
-            onChange={(e) => onChange('bairro', e.target.value)}
-            onBlur={(e) => onChange('bairro', formatTitle(e.target.value))}
-            placeholder={isExporting ? "" : "Ex: Jd. Guadalajara"}
-          />
-        </div>
-        <div className={`col-span-2 flex flex-col gap-1.5 ${!data.cidade.trim() ? 'print:hidden' : ''}`}>
-          <label className="text-[0.59rem] text-zinc-500 font-bold uppercase tracking-wider">Cidade / UF</label>
-          <input 
-            className="w-full bg-transparent border-b-[1.5px] border-zinc-200 py-1.5 text-[0.9rem] font-medium text-black transition-colors focus:border-[#12A15F] outline-none placeholder:italic placeholder:text-[#A1A1AA] placeholder:font-normal placeholder:text-[0.83rem]"
-            type="text" 
-            value={data.cidade}
-            onChange={(e) => onChange('cidade', e.target.value)}
-            onBlur={(e) => onChange('cidade', formatTitle(e.target.value))}
-            placeholder={isExporting ? "" : "Ex: Sorocaba - SP"}
-          />
+        <div className="col-span-12 flex flex-col sm:flex-row justify-between items-start gap-8 pt-2 pb-1">
+          {/* Rua */}
+          <div className={`flex-[3] min-w-0 ${!data.rua.trim() ? 'print:hidden' : ''}`}>
+            <label className={labelStyle}>Rua / Nº</label>
+            <textarea 
+              className="w-full bg-transparent py-1 border-b border-[#008c4a26] text-[0.85rem] text-black font-medium outline-none block resize-none overflow-hidden min-h-[1.5rem]"
+              rows={1}
+              value={data.rua}
+              onChange={(e) => onChange('rua', e.target.value)}
+              onBlur={(e) => onChange('rua', formatTitle(e.target.value))}
+              onInput={(e: any) => {
+                e.target.style.height = 'auto';
+                e.target.style.height = `${e.target.scrollHeight}px`;
+              }}
+              placeholder={isExporting ? "" : "Ex: R. Cônego André Pieroni, 492"}
+            />
+          </div>
+          {/* Bairro */}
+          <div className={`flex-[2] min-w-0 ${!data.bairro.trim() ? 'print:hidden' : ''}`}>
+            <label className="text-[0.59rem] text-zinc-500 font-bold uppercase tracking-wider block mb-1.5">Bairro</label>
+            <span 
+              contentEditable={!isExporting}
+              suppressContentEditableWarning={true}
+            className="w-full block bg-transparent py-1 border-b border-[#008c4a26] text-[0.9rem] font-medium text-black outline-none !h-auto min-h-[1.5rem] !whitespace-normal break-words doc-field"
+              onBlur={(e) => onChange('bairro', formatTitle(e.currentTarget.innerText))}
+              data-placeholder="Ex: Jd. Guadalajara"
+            >
+              {data.bairro}
+            </span>
+          </div>
+          {/* Cidade */}
+          <div className={`flex-[2] min-w-[150px] ${!data.cidade.trim() ? 'print:hidden' : ''}`}>
+            <label className="text-[0.59rem] text-zinc-500 font-bold uppercase tracking-wider block mb-1.5">Cidade / UF</label>
+            <span 
+              contentEditable={!isExporting}
+              suppressContentEditableWarning={true}
+              className="w-full block bg-transparent py-1 border-b border-[#008c4a26] text-[0.9rem] font-medium text-black outline-none !h-auto min-h-[1.5rem] !whitespace-normal break-words text-left doc-field"
+              onBlur={(e) => onChange('cidade', formatTitle(e.currentTarget.innerText))}
+              data-placeholder="Ex: Sorocaba - SP"
+            >
+              {data.cidade}
+            </span>
+          </div>
         </div>
       </div>
       <div className="h-[1px] bg-gradient-to-r from-transparent via-[#12A15F33] to-transparent my-4 opacity-60"></div>

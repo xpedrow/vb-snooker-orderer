@@ -25,13 +25,13 @@ const OrderTable: React.FC<Props> = ({ items, onUpdate, onAdd, onRemove, isExpor
         <div className="flex-1 h-[1px] bg-gradient-to-r from-[#008c4a26] to-transparent"></div>
       </div>
       
-      <div className="overflow-hidden">
-        <table className="w-full text-left border-collapse font-sans table-fixed">
+      <div className="">
+        <table className="w-full text-left border-collapse font-sans table-auto">
           <thead>
             <tr className="bg-[#0A0A0A] text-[0.59rem] text-[#12A15F] uppercase tracking-[0.22em] font-bold">
               <th className="p-[8px_13px] w-[35px]">#</th>
-              <th className="p-[8px_13px] w-[25%]">Produto</th>
-              <th className="p-[8px_13px]">Descrição / Especificação</th>
+              <th className="p-[8px_13px] w-[20%] min-w-[120px]">Produto</th>
+              <th className="p-[8px_13px] min-w-[200px]">Descrição / Especificação</th>
               <th className="p-[8px_13px] text-right w-[110px]">Valor Unit.</th>
               <th className="p-[8px_13px] text-center w-[55px]">Qtd.</th>
               <th className="p-[8px_13px] text-right w-[125px]">Total</th>
@@ -52,24 +52,26 @@ const OrderTable: React.FC<Props> = ({ items, onUpdate, onAdd, onRemove, isExpor
                   </div>
                 </td>
                 <td className={`${rowPadding} vertical-middle`}>
-                  <input 
-                    className={`w-full bg-transparent p-1 ${fontSize} font-medium text-black outline-none focus:bg-white focus:border-b focus:border-[#12A15F] transition-all`}
-                    type="text"
-                    value={item.product}
-                    onChange={(e) => onUpdate(item.id, 'product', e.target.value)}
-                    onBlur={(e) => onUpdate(item.id, 'product', formatTitle(e.target.value))}
-                    placeholder={isExporting ? "" : "Nome do produto"}
-                  />
+                  <span 
+                    contentEditable={!isExporting}
+                    suppressContentEditableWarning={true}
+                    className={`w-full block bg-transparent p-1 ${fontSize} font-medium text-black outline-none focus:bg-white focus:border-b focus:border-[#12A15F] transition-all min-h-[1.8rem] whitespace-normal break-words doc-field`}
+                    onBlur={(e) => onUpdate(item.id, 'product', formatTitle(e.currentTarget.innerText))}
+                    data-placeholder={isExporting ? "" : "Nome do produto"}
+                  >
+                    {item.product}
+                  </span>
                 </td>
                 <td className={`${rowPadding} vertical-middle`}>
-                  <input 
-                    className={`w-full bg-transparent p-1 ${fontSize} text-[#3F3F46] outline-none focus:bg-white focus:border-b focus:border-[#12A15F] transition-all`}
-                    type="text"
-                    value={item.description}
-                    onChange={(e) => onUpdate(item.id, 'description', e.target.value)}
-                    onBlur={(e) => onUpdate(item.id, 'description', formatSentence(e.target.value))}
-                    placeholder={isExporting ? "" : "Detalhes técnicos..."}
-                  />
+                  <span 
+                    contentEditable={!isExporting}
+                    suppressContentEditableWarning={true}
+                    className={`w-full block bg-transparent p-1 ${fontSize} text-[#3F3F46] outline-none focus:bg-white focus:border-b focus:border-[#12A15F] transition-all min-h-[1.8rem] whitespace-normal break-words doc-field`}
+                    onBlur={(e) => onUpdate(item.id, 'description', formatSentence(e.currentTarget.innerText))}
+                    data-placeholder={isExporting ? "" : "Detalhes técnicos..."}
+                  >
+                    {item.description}
+                  </span>
                 </td>
                 <td className={`${rowPadding} vertical-middle`}>
                   <input 

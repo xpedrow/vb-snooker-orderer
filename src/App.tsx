@@ -119,7 +119,7 @@ const App: React.FC = () => {
     onBeforeGetContent: async () => {
       // 1. Enter Clean State
       setIsExporting(true);
-      
+
       // 2. Proactive Sanitization
       setState(prev => ({
         ...prev,
@@ -184,7 +184,7 @@ const App: React.FC = () => {
               <Printer size={14} /> <span>Imprimir</span>
             </button>
             <button onClick={() => handlePrint()} className="flex items-center gap-2 px-4 py-2 bg-zinc-800 border border-zinc-700 text-white rounded-md hover:bg-zinc-700 transition-all text-[0.65rem] font-bold uppercase tracking-widest shadow-lg group">
-              <FileDown size={14} className="text-gold group-hover:scale-110 transition-transform" /> 
+              <FileDown size={14} className="text-gold group-hover:scale-110 transition-transform" />
               <span>Salvar PDF</span>
             </button>
           </div>
@@ -199,13 +199,10 @@ const App: React.FC = () => {
           className="document-page"
         >
           <div className="flex flex-col flex-1">
-            {/* ACCENT BAR */}
-            <div className="absolute left-0 top-0 bottom-0 w-[6px] bg-gradient-to-b from-[#12A15F] via-[#008c4a] to-[#12A15F] z-20 pointer-events-none"></div>
-
             <Header />
 
             {/* TITLE BAND - EXACT BRAND GREEN */}
-            <div className="doc-band bg-[#008c4a] p-[12px_44px_12px_48px] flex justify-between items-center text-white relative z-10 w-full flex-shrink-0">
+            <div className="doc-band bg-[#009353] p-[12px_44px_12px_48px] flex justify-between items-center text-white relative z-10 w-full flex-shrink-0">
               <div className="flex items-baseline gap-3">
                 <span className="font-serif font-black text-base uppercase tracking-[0.12em]">Pedido de Venda</span>
                 <span className="font-mono text-[0.72rem] text-[#A7F3D0] tracking-widest">Nº {state.orderNumber}</span>
@@ -221,7 +218,7 @@ const App: React.FC = () => {
               </div>
             </div>
 
-            <div className={`print-content-area flex flex-col flex-1 p-[10px_44px_20px_48px] bg-white print:p-0 ${state.items.length > 8 ? 'gap-0.5' : 'gap-4'}`}>
+            <div className={`print-content-area flex flex-col flex-1 p-[10px_44px_20px_48px] bg-white print:p-0 ${state.items.length > 8 ? 'gap-0.5' : 'gap-3'}`}>
               <div className="flex-shrink-0">
                 <ClientInfo data={state.client} onChange={handleClientChange} isExporting={isExporting} />
               </div>
@@ -237,7 +234,7 @@ const App: React.FC = () => {
               </div>
 
               {/* DYNAMIC FOOTER GROUP (COLLISION PREVENTION) */}
-              <div className="mt-auto flex flex-col flex-shrink-1 gap-1 border-t border-zinc-100 pt-4 print:pt-2 print:gap-0.5">
+              <div className="mt-auto flex flex-col flex-shrink-0 gap-0.5 border-t border-zinc-100 pt-4 print:pt-1 print:gap-0">
                 <Totals
                   subtotal={subtotal}
                   discount={state.discount}
@@ -254,7 +251,7 @@ const App: React.FC = () => {
           </div>
 
           {/* FOOTER - ALIGNED AT BOTTOM OF PAGE */}
-          <div className="doc-footer mt-auto relative py-6 px-[48px] border-t border-zinc-100 bg-[#F4F4F5] flex justify-between items-center text-[0.65rem] text-[#004a27] font-bold uppercase tracking-wider print:bg-transparent print:border-t print:border-zinc-200 print:px-[10mm] print:pb-8 flex-shrink-0">
+          <div className="doc-footer mt-auto relative py-4 px-[48px] border-t border-zinc-100 bg-[#F4F4F5] flex justify-between items-center text-[0.65rem] text-[#004a27] font-bold uppercase tracking-wider print:bg-transparent print:border-t print:border-zinc-200 print:px-[10mm] print:pb-6 flex-shrink-0">
             <div className="flex flex-col gap-1">
               <span>VB Snooker Comércio de Materiais Esportivos LTDA</span>
               <span className="opacity-70 text-[0.55rem] text-zinc-800">Sorocaba-SP · Brasileira · Desde 1993</span>
