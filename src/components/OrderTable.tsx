@@ -5,13 +5,15 @@ import { Trash2, Plus } from 'lucide-react';
 
 interface Props {
   items: OrderItem[];
+  startIndex?: number;
+  showAddButton?: boolean;
   onUpdate: (id: string, field: keyof OrderItem, value: any) => void;
   onAdd: () => void;
   onRemove: (id: string) => void;
   isExporting?: boolean;
 }
 
-const OrderTable: React.FC<Props> = ({ items, onUpdate, onAdd, onRemove, isExporting }) => {
+const OrderTable: React.FC<Props> = ({ items, startIndex = 0, showAddButton = true, onUpdate, onAdd, onRemove, isExporting }) => {
   const isCompressed = items.length > 5;
   const isUltraCompressed = items.length > 10;
 
@@ -48,7 +50,7 @@ const OrderTable: React.FC<Props> = ({ items, onUpdate, onAdd, onRemove, isExpor
                 >
                   <td className={`${rowPadding} vertical-middle`}>
                     <div className={`${isCompressed ? 'w-[18px] h-[18px]' : 'w-[22px] h-[22px]'} rounded-full bg-[#0A0A0A] text-[#12A15F] font-mono ${isCompressed ? 'text-[0.55rem]' : 'text-[0.62rem]'} flex items-center justify-center m-auto`}>
-                      {index + 1}
+                      {startIndex + index + 1}
                     </div>
                   </td>
                   <td className={`${rowPadding} vertical-middle`}>
@@ -117,15 +119,17 @@ const OrderTable: React.FC<Props> = ({ items, onUpdate, onAdd, onRemove, isExpor
         </table>
       </div>
 
-      <button
-        onClick={onAdd}
-        className={`mt-6 ${isExporting ? 'hidden' : 'flex'} items-center gap-3 text-[0.7rem] font-black text-[#12A15F] uppercase tracking-widest hover:text-gold-hi transition-colors group`}
-      >
-        <div className="w-8 h-8 border-2 border-[#12A15F40] text-[#12A15F] flex items-center justify-center rounded-full group-hover:border-[#12A15F] transition-all">
-          <Plus size={18} strokeWidth={3} />
-        </div>
-        Adicionar item ao pedido
-      </button>
+      {showAddButton && (
+        <button
+          onClick={onAdd}
+          className={`mt-6 ${isExporting ? 'hidden' : 'flex'} items-center gap-3 text-[0.7rem] font-black text-[#12A15F] uppercase tracking-widest hover:text-gold-hi transition-colors group`}
+        >
+          <div className="w-8 h-8 border-2 border-[#12A15F40] text-[#12A15F] flex items-center justify-center rounded-full group-hover:border-[#12A15F] transition-all">
+            <Plus size={18} strokeWidth={3} />
+          </div>
+          Adicionar item ao pedido
+        </button>
+      )}
     </div>
   );
 };

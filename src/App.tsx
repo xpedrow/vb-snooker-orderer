@@ -24,6 +24,77 @@ const INITIAL_STATE: OrderState = {
   paymentMethod: ''
 };
 
+interface OrderPage {
+  items: OrderItem[];
+  hasClient: boolean;
+  hasTotals: boolean;
+  pageNum: number;
+  totalPages: number;
+  startIndex: number;
+}
+
+const getPages = (items: OrderItem[]): OrderPage[] => {
+  const pages: OrderPage[] = [];
+  let remaining = [...items];
+  let pageIndex = 0;
+  let itemsProcessed = 0;
+
+  if (remaining.length === 0) {
+    pages.push({ items: [], hasClient: true, hasTotals: true, pageNum: 1, totalPages: 1, startIndex: 0 });
+    return pages;
+  }
+
+  while (remaining.length > 0 || pageIndex === 0) {
+    const isFirst = pageIndex === 0;
+    
+    // Capacities for A4 (Conservative to allow multiple-line descriptions)
+    const CAP_FULL = isFirst ? 14 : 18; 
+    const CAP_WITH_TOTALS = isFirst ? 8 : 12; 
+
+    let chunk = [];
+    let putTotalsHere = false;
+
+    if (remaining.length <= CAP_WITH_TOTALS) {
+      chunk = remaining.splice(0, remaining.length);
+      putTotalsHere = true;
+    } else if (remaining.length <= CAP_FULL) {
+      chunk = remaining.splice(0, CAP_FULL);
+      putTotalsHere = false;
+    } else {
+      chunk = remaining.splice(0, CAP_FULL);
+      putTotalsHere = false;
+    }
+
+    pages.push({
+      items: chunk,
+      hasClient: isFirst,
+      hasTotals: putTotalsHere,
+      pageNum: pageIndex + 1,
+      totalPages: 0,
+      startIndex: itemsProcessed
+    });
+    
+    itemsProcessed += chunk.length;
+
+    if (remaining.length === 0 && !putTotalsHere) {
+      pageIndex++;
+      pages.push({
+        items: [],
+        hasClient: false,
+        hasTotals: true,
+        pageNum: pageIndex + 1,
+        totalPages: 0,
+        startIndex: itemsProcessed
+      });
+      break;
+    }
+
+    pageIndex++;
+  }
+
+  return pages.map(p => ({ ...p, totalPages: pages.length }));
+};
+
 const App: React.FC = () => {
   const [state, setState] = useState<OrderState>(() => {
     const saved = localStorage.getItem('vbs_last_order');
@@ -189,45 +260,58 @@ const App: React.FC = () => {
     try {
       const element = componentRef.current;
       
-      // Force element to 800px to prevent horizontal squashing/stretching
       const originalStyle = element.getAttribute('style') || '';
       element.classList.add('export-mode');
-      element.setAttribute('style', `${originalStyle} width: 800px !important; max-width: 800px !important; min-width: 800px !important;`);
       
-      const canvas = await html2canvas(element, {
-        scale: 2,
-        useCORS: true,
-        logging: false,
-        backgroundColor: '#ffffff',
-        windowWidth: 800
-      });
-      
-      element.classList.remove('export-mode');
-      element.setAttribute('style', originalStyle);
-      
-      const imgData = canvas.toDataURL('image/png');
       const pdf = new jsPDF({
         orientation: 'portrait',
         unit: 'mm',
         format: 'a4'
       });
       
-      const pdfWidth = pdf.internal.pageSize.getWidth();
-      const pdfPageHeight = pdf.internal.pageSize.getHeight();
+      const pageNodes = element.querySelectorAll('.document-page');
       
-      let finalWidth = pdfWidth;
-      let finalHeight = (canvas.height * pdfWidth) / canvas.width;
-      
-      // FORCE TO SINGLE PAGE: If image is taller than A4, scale it down to fit perfectly
-      if (finalHeight > pdfPageHeight) {
-        const ratio = pdfPageHeight / finalHeight;
-        finalWidth *= ratio;
-        finalHeight = pdfPageHeight;
+      for (let i = 0; i < pageNodes.length; i++) {
+        const pageEl = pageNodes[i] as HTMLElement;
+        const pageStyle = pageEl.getAttribute('style') || '';
+        
+        // Force element to 800px to prevent horizontal squashing/stretching
+        pageEl.setAttribute('style', `${pageStyle} width: 800px !important; max-width: 800px !important; min-width: 800px !important;`);
+        
+        const canvas = await html2canvas(pageEl, {
+          scale: 2,
+          useCORS: true,
+          logging: false,
+          backgroundColor: '#ffffff',
+          windowWidth: 800
+        });
+        
+        pageEl.setAttribute('style', pageStyle);
+        
+        if (i > 0) {
+          pdf.addPage();
+        }
+        
+        const imgData = canvas.toDataURL('image/png');
+        const pdfWidth = pdf.internal.pageSize.getWidth();
+        const pdfPageHeight = pdf.internal.pageSize.getHeight();
+        
+        let finalWidth = pdfWidth;
+        let finalHeight = (canvas.height * pdfWidth) / canvas.width;
+        
+        // FORCE TO SINGLE PAGE (Per Chunk): scale it down to fit perfectly if slightly over
+        if (finalHeight > pdfPageHeight) {
+          const ratio = pdfPageHeight / finalHeight;
+          finalWidth *= ratio;
+          finalHeight = pdfPageHeight;
+        }
+        
+        const xOffset = (pdfWidth - finalWidth) / 2;
+        pdf.addImage(imgData, 'PNG', xOffset, 0, finalWidth, finalHeight);
       }
       
-      const xOffset = (pdfWidth - finalWidth) / 2;
+      element.classList.remove('export-mode');
       
-      pdf.addImage(imgData, 'PNG', xOffset, 0, finalWidth, finalHeight);
       pdf.save(`VB_Snooker_Pedido_${state.orderNumber}.pdf`);
       
       saveToHistory();
@@ -283,92 +367,106 @@ const App: React.FC = () => {
         <div
           ref={componentRef}
           id="section-to-print"
-          className="document-page"
+          className="flex flex-col gap-8 print:gap-0 print:bg-white export-container"
         >
-          <div className="flex flex-col flex-1 w-full min-w-full">
-            <Header />
+          {getPages(state.items).map((page, idx) => (
+            <div key={idx} className="document-page pb-12 print-break-after">
+              <div className="flex flex-col flex-1 w-full min-w-full">
+                <Header />
 
-            {/* TITLE BAND - EXACT BRAND GREEN */}
-            <div className="doc-band bg-[#009353] py-2 px-12 flex justify-between items-center text-white relative z-10 w-full flex-shrink-0">
-              <div className="flex items-baseline gap-3">
-                <span className="font-serif font-black text-base uppercase tracking-[0.12em]">Pedido de Venda</span>
-                <span className="font-mono text-[0.72rem] text-[#A7F3D0] tracking-widest">Nº {state.orderNumber}</span>
-              </div>
-              <div className="flex items-center gap-4">
-                <label className="text-[1rem] uppercase font-extrabold tracking-[0.2em]">Data:</label>
-                <input
-                  className="bg-transparent border-b border-[#008c4a26] text-white font-mono text-[1.05rem] font-bold outline-none w-28 focus:border-white/40 transition-all cursor-pointer"
-                  type="text"
-                  value={state.orderDate}
-                  onChange={(e) => setState(prev => ({ ...prev, orderDate: e.target.value }))}
-                />
-              </div>
-            </div>
-
-            <div className={`print-content-area flex flex-col flex-1 py-2 px-12 bg-white print:px-[10mm] print:pt-2 print:pb-[30mm] ${state.items.length > 8 ? 'gap-0' : 'gap-2'}`}>
-              <div className="flex-shrink-0">
-                <ClientInfo data={state.client} onChange={handleClientChange} isExporting={isExporting} />
-              </div>
-
-              <div className="flex-grow flex flex-col min-h-0">
-                <OrderTable
-                  items={state.items}
-                  onUpdate={handleItemUpdate}
-                  onAdd={addItem}
-                  onRemove={removeItem}
-                  isExporting={isExporting}
-                />
-              </div>
-
-              {/* DYNAMIC FOOTER GROUP (COLLISION PREVENTION) */}
-              <div className="flex flex-col flex-shrink-0 gap-0.5 border-t border-zinc-100 mt-8 pt-4 print:pt-1 print:gap-0">
-                <Totals
-                  subtotal={subtotal}
-                  discount={state.discount}
-                  onDiscountChange={(val) => setState(prev => ({ ...prev, discount: val }))}
-                  isCompressed={state.items.length > 8}
-                  isExporting={isExporting}
-                />
-                <Observations
-                  value={state.observations}
-                  paymentMethod={state.paymentMethod}
-                  onChange={(val) => setState(prev => ({ ...prev, observations: val }))}
-                  onPaymentChange={(val) => setState(prev => ({ ...prev, paymentMethod: val }))}
-                  isExporting={isExporting}
-                />
-              </div>
-
-              {/* SIGNATURE AREA - MATHEMATICALLY ALIGNED BASELINES */}
-              <div className={`sig-area flex justify-between items-start px-12 w-full flex-shrink-0 ${state.items.length > 8 ? 'mt-4' : 'mt-12'}`}>
-                <div className="flex flex-col items-center">
-                  <div className="w-[180px] border-b border-zinc-300 mb-2"></div>
-                  <div className="h-6 flex items-center justify-center">
-                    <span className="text-[0.55rem] uppercase font-bold text-zinc-500 tracking-[0.2em] antialiased">Assinatura do Cliente</span>
+                {/* TITLE BAND - EXACT BRAND GREEN */}
+                <div className="doc-band bg-[#009353] py-2 px-12 flex justify-between items-center text-white relative z-10 w-full flex-shrink-0">
+                  <div className="flex items-baseline gap-3">
+                    <span className="font-serif font-black text-base uppercase tracking-[0.12em]">Pedido de Venda</span>
+                    <span className="font-mono text-[0.72rem] text-[#A7F3D0] tracking-widest">Nº {state.orderNumber}</span>
+                  </div>
+                  <div className="flex items-center gap-4">
+                    <label className="text-[1rem] uppercase font-extrabold tracking-[0.2em]">Data:</label>
+                    <input
+                      className="bg-transparent border-b border-[#008c4a26] text-white font-mono text-[1.05rem] font-bold outline-none w-28 focus:border-white/40 transition-all cursor-pointer"
+                      type="text"
+                      value={state.orderDate}
+                      onChange={(e) => setState(prev => ({ ...prev, orderDate: e.target.value }))}
+                    />
                   </div>
                 </div>
-                <div className="flex flex-col items-center">
-                  <div className="w-[180px] border-b border-[#009353]/30 mb-2"></div>
-                  <div className="h-8 flex items-center justify-center">
-                    <span className="font-serif font-bold text-[#009353] text-[1.1rem] italic tracking-[0.05em] leading-none antialiased">VB Snooker</span>
+
+                <div className={`print-content-area flex flex-col flex-1 py-2 px-12 bg-white print:px-[10mm] print:pt-2 print:pb-[30mm] ${state.items.length > 8 ? 'gap-0' : 'gap-2'}`}>
+                  {page.hasClient && (
+                    <div className="flex-shrink-0">
+                      <ClientInfo data={state.client} onChange={handleClientChange} isExporting={isExporting} />
+                    </div>
+                  )}
+
+                  <div className="flex-grow flex flex-col min-h-0">
+                    <OrderTable
+                      items={page.items}
+                      startIndex={page.startIndex}
+                      showAddButton={idx === getPages(state.items).length - 1}
+                      onUpdate={handleItemUpdate}
+                      onAdd={addItem}
+                      onRemove={removeItem}
+                      isExporting={isExporting}
+                    />
                   </div>
+
+                  {page.hasTotals && (
+                    <>
+                      {/* DYNAMIC FOOTER GROUP (COLLISION PREVENTION) */}
+                      <div className="flex flex-col flex-shrink-0 gap-0.5 border-t border-zinc-100 mt-8 pt-4 print:pt-1 print:gap-0">
+                        <Totals
+                          subtotal={subtotal}
+                          discount={state.discount}
+                          onDiscountChange={(val) => setState(prev => ({ ...prev, discount: val }))}
+                          isCompressed={state.items.length > 8}
+                          isExporting={isExporting}
+                        />
+                        <Observations
+                          value={state.observations}
+                          paymentMethod={state.paymentMethod}
+                          onChange={(val) => setState(prev => ({ ...prev, observations: val }))}
+                          onPaymentChange={(val) => setState(prev => ({ ...prev, paymentMethod: val }))}
+                          isExporting={isExporting}
+                        />
+                      </div>
+
+                      {/* SIGNATURE AREA - MATHEMATICALLY ALIGNED BASELINES */}
+                      <div className={`sig-area flex justify-between items-start px-12 w-full flex-shrink-0 ${state.items.length > 8 ? 'mt-4' : 'mt-12'}`}>
+                        <div className="flex flex-col items-center">
+                          <div className="w-[180px] border-b border-zinc-300 mb-2"></div>
+                          <div className="h-6 flex items-center justify-center">
+                            <span className="text-[0.55rem] uppercase font-bold text-zinc-500 tracking-[0.2em] antialiased">Assinatura do Cliente</span>
+                          </div>
+                        </div>
+                        <div className="flex flex-col items-center">
+                          <div className="w-[180px] border-b border-[#009353]/30 mb-2"></div>
+                          <div className="h-8 flex items-center justify-center">
+                            <span className="font-serif font-bold text-[#009353] text-[1.1rem] italic tracking-[0.05em] leading-none antialiased">VB Snooker</span>
+                          </div>
+                        </div>
+                      </div>
+                    </>
+                  )}
+                </div>
+              </div>
+
+              {/* FOOTER - ALIGNED AT BOTTOM OF PAGE */}
+              <div className="doc-footer mt-auto relative h-[80px] px-12 border-t border-zinc-100 bg-[#F4F4F5] flex justify-between items-center text-[0.65rem] text-[#004a27] font-bold uppercase tracking-wider print:bg-transparent print:border-t print:border-zinc-200 print:px-[10mm] print:pb-[12mm] flex-shrink-0">
+                <div className="flex-1 flex flex-col justify-center gap-0.5 h-full">
+                  <span className="font-bold leading-tight">VB Snooker Comércio de Materiais Esportivos LTDA</span>
+                  <span className="opacity-70 text-[0.55rem] text-zinc-800 leading-tight">Sorocaba-SP · Brasileira · Desde 1993</span>
+                </div>
+                <div className="flex-1 flex justify-center items-center h-full">
+                  <span className="font-brand font-bold text-gold text-[1.25rem] opacity-60 tracking-widest italic leading-none">VB Snooker</span>
+                </div>
+                <div className="flex-1 flex justify-end items-center h-full">
+                  <span className="font-mono text-xs text-zinc-700 font-bold leading-none">
+                    {page.pageNum}/{page.totalPages} · {new Date().getFullYear()}
+                  </span>
                 </div>
               </div>
             </div>
-          </div>
-
-          {/* FOOTER - ALIGNED AT BOTTOM OF PAGE */}
-          <div className="doc-footer mt-auto relative h-[80px] px-12 border-t border-zinc-100 bg-[#F4F4F5] flex justify-between items-center text-[0.65rem] text-[#004a27] font-bold uppercase tracking-wider print:bg-transparent print:border-t print:border-zinc-200 print:px-[10mm] print:pb-[12mm] flex-shrink-0">
-            <div className="flex-1 flex flex-col justify-center gap-0.5 h-full">
-              <span className="font-bold leading-tight">VB Snooker Comércio de Materiais Esportivos LTDA</span>
-              <span className="opacity-70 text-[0.55rem] text-zinc-800 leading-tight">Sorocaba-SP · Brasileira · Desde 1993</span>
-            </div>
-            <div className="flex-1 flex justify-center items-center h-full">
-              <span className="font-brand font-bold text-gold text-[1.25rem] opacity-60 tracking-widest italic leading-none">VB Snooker</span>
-            </div>
-            <div className="flex-1 flex justify-end items-center h-full">
-              <span className="font-mono text-xs text-zinc-700 font-bold leading-none">{new Date().getFullYear()}</span>
-            </div>
-          </div>
+          ))}
         </div>
       </div>
 
