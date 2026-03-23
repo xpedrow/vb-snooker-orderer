@@ -370,7 +370,7 @@ const App: React.FC = () => {
           className="flex flex-col gap-8 print:gap-0 print:bg-white export-container"
         >
           {getPages(state.items).map((page, idx) => (
-            <div key={idx} className="document-page pb-12 print-break-after">
+            <div key={idx} className="document-page print-break-after">
               <div className="flex flex-col flex-1 w-full min-w-full">
                 <Header />
 
@@ -461,7 +461,7 @@ const App: React.FC = () => {
                 </div>
                 <div className="flex-1 flex justify-end items-center h-full">
                   <span className="font-mono text-xs text-zinc-700 font-bold leading-none">
-                    {page.pageNum}/{page.totalPages} · {new Date().getFullYear()}
+                    {page.pageNum}/{page.totalPages}
                   </span>
                 </div>
               </div>
