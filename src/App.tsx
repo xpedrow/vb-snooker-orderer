@@ -1,5 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useReactToPrint } from 'react-to-print';
+import html2canvas from 'html2canvas';
+import { jsPDF } from 'jspdf';
 import { OrderState, OrderItem, ClientData } from './types/order';
 import { toNumber, filterVisibleItems, fmt, sanitize } from './utils/format';
 import Header from './components/Header';
@@ -15,10 +17,11 @@ const HISTORY_KEY = 'vbs_orders_history';
 const INITIAL_STATE: OrderState = {
   orderNumber: '0001',
   orderDate: new Date().toLocaleDateString('pt-BR'),
-  client: { name: '', doc: '', phone: '', email: '', rua: '', bairro: '', cidade: '' },
+  client: { name: '', doc: '', phone: '', email: '', cep: '', rua: '', complemento: '', bairro: '', cidade: '' },
   items: [{ id: '1', n: 1, product: '', description: '', unitValue: '', quantity: '1', total: 0 }],
   discount: '0',
-  observations: ''
+  observations: '',
+  paymentMethod: ''
 };
 
 const App: React.FC = () => {
@@ -153,6 +156,90 @@ const App: React.FC = () => {
     documentTitle: `VB_Snooker_Pedido_${state.orderNumber}`,
   });
 
+  const handleSavePDF = async () => {
+    if (!componentRef.current) return;
+    
+    setIsExporting(true);
+    
+    // Proactive Sanitization
+    setState(prev => ({
+      ...prev,
+      client: Object.fromEntries(
+        Object.entries(prev.client).map(([k, v]) => [k, sanitize(v)])
+      ) as unknown as ClientData,
+      items: prev.items.map(item => ({
+        ...item,
+        product: sanitize(item.product),
+        description: sanitize(item.description)
+      })),
+      observations: sanitize(prev.observations),
+      paymentMethod: sanitize(prev.paymentMethod || '')
+    }));
+
+    const filtered = filterVisibleItems(state.items);
+    if (filtered.length === 0) {
+      setIsExporting(false);
+      alert('Adicione ao menos um produto válido.');
+      return;
+    }
+
+    // Wait for React to render without placeholders
+    await new Promise(resolve => setTimeout(resolve, 150));
+
+    try {
+      const element = componentRef.current;
+      
+      // Force element to 800px to prevent horizontal squashing/stretching
+      const originalStyle = element.getAttribute('style') || '';
+      element.classList.add('export-mode');
+      element.setAttribute('style', `${originalStyle} width: 800px !important; max-width: 800px !important; min-width: 800px !important;`);
+      
+      const canvas = await html2canvas(element, {
+        scale: 2,
+        useCORS: true,
+        logging: false,
+        backgroundColor: '#ffffff',
+        windowWidth: 800
+      });
+      
+      element.classList.remove('export-mode');
+      element.setAttribute('style', originalStyle);
+      
+      const imgData = canvas.toDataURL('image/png');
+      const pdf = new jsPDF({
+        orientation: 'portrait',
+        unit: 'mm',
+        format: 'a4'
+      });
+      
+      const pdfWidth = pdf.internal.pageSize.getWidth();
+      const pdfPageHeight = pdf.internal.pageSize.getHeight();
+      
+      let finalWidth = pdfWidth;
+      let finalHeight = (canvas.height * pdfWidth) / canvas.width;
+      
+      // FORCE TO SINGLE PAGE: If image is taller than A4, scale it down to fit perfectly
+      if (finalHeight > pdfPageHeight) {
+        const ratio = pdfPageHeight / finalHeight;
+        finalWidth *= ratio;
+        finalHeight = pdfPageHeight;
+      }
+      
+      const xOffset = (pdfWidth - finalWidth) / 2;
+      
+      pdf.addImage(imgData, 'PNG', xOffset, 0, finalWidth, finalHeight);
+      pdf.save(`VB_Snooker_Pedido_${state.orderNumber}.pdf`);
+      
+      saveToHistory();
+      incrementOrder();
+    } catch (error) {
+      console.error("Failed to generate PDF", error);
+      alert("Erro ao salvar o PDF.");
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
   const handleHistorySelect = (order: OrderState) => {
     setState(order);
     setIsHistoryOpen(false);
@@ -183,7 +270,7 @@ const App: React.FC = () => {
             <button onClick={() => handlePrint()} className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-[#008c4a] to-[#004d29] text-white rounded-md hover:shadow-[0_0_15px_rgba(0,140,74,0.4)] transition-all text-[0.65rem] font-bold uppercase tracking-widest shadow-lg">
               <Printer size={14} /> <span>Imprimir</span>
             </button>
-            <button onClick={() => handlePrint()} className="flex items-center gap-2 px-4 py-2 bg-zinc-800 border border-zinc-700 text-white rounded-md hover:bg-zinc-700 transition-all text-[0.65rem] font-bold uppercase tracking-widest shadow-lg group">
+            <button onClick={() => handleSavePDF()} className="flex items-center gap-2 px-4 py-2 bg-zinc-800 border border-zinc-700 text-white rounded-md hover:bg-zinc-700 transition-all text-[0.65rem] font-bold uppercase tracking-widest shadow-lg group">
               <FileDown size={14} className="text-gold group-hover:scale-110 transition-transform" />
               <span>Salvar PDF</span>
             </button>
@@ -198,11 +285,11 @@ const App: React.FC = () => {
           id="section-to-print"
           className="document-page"
         >
-          <div className="flex flex-col flex-1">
+          <div className="flex flex-col flex-1 w-full min-w-full">
             <Header />
 
             {/* TITLE BAND - EXACT BRAND GREEN */}
-            <div className="doc-band bg-[#009353] p-[12px_44px_12px_48px] flex justify-between items-center text-white relative z-10 w-full flex-shrink-0">
+            <div className="doc-band bg-[#009353] py-2 px-12 flex justify-between items-center text-white relative z-10 w-full flex-shrink-0">
               <div className="flex items-baseline gap-3">
                 <span className="font-serif font-black text-base uppercase tracking-[0.12em]">Pedido de Venda</span>
                 <span className="font-mono text-[0.72rem] text-[#A7F3D0] tracking-widest">Nº {state.orderNumber}</span>
@@ -218,7 +305,7 @@ const App: React.FC = () => {
               </div>
             </div>
 
-            <div className={`print-content-area flex flex-col flex-1 p-[10px_44px_20px_48px] bg-white print:p-0 ${state.items.length > 8 ? 'gap-0.5' : 'gap-3'}`}>
+            <div className={`print-content-area flex flex-col flex-1 py-2 px-12 bg-white print:px-[10mm] print:pt-2 print:pb-[30mm] ${state.items.length > 8 ? 'gap-0' : 'gap-2'}`}>
               <div className="flex-shrink-0">
                 <ClientInfo data={state.client} onChange={handleClientChange} isExporting={isExporting} />
               </div>
@@ -234,30 +321,53 @@ const App: React.FC = () => {
               </div>
 
               {/* DYNAMIC FOOTER GROUP (COLLISION PREVENTION) */}
-              <div className="mt-auto flex flex-col flex-shrink-0 gap-0.5 border-t border-zinc-100 pt-4 print:pt-1 print:gap-0">
+              <div className="flex flex-col flex-shrink-0 gap-0.5 border-t border-zinc-100 mt-8 pt-4 print:pt-1 print:gap-0">
                 <Totals
                   subtotal={subtotal}
                   discount={state.discount}
                   onDiscountChange={(val) => setState(prev => ({ ...prev, discount: val }))}
                   isCompressed={state.items.length > 8}
+                  isExporting={isExporting}
                 />
                 <Observations
                   value={state.observations}
+                  paymentMethod={state.paymentMethod}
                   onChange={(val) => setState(prev => ({ ...prev, observations: val }))}
+                  onPaymentChange={(val) => setState(prev => ({ ...prev, paymentMethod: val }))}
                   isExporting={isExporting}
                 />
+              </div>
+
+              {/* SIGNATURE AREA - MATHEMATICALLY ALIGNED BASELINES */}
+              <div className={`sig-area flex justify-between items-start px-12 w-full flex-shrink-0 ${state.items.length > 8 ? 'mt-4' : 'mt-12'}`}>
+                <div className="flex flex-col items-center">
+                  <div className="w-[180px] border-b border-zinc-300 mb-2"></div>
+                  <div className="h-6 flex items-center justify-center">
+                    <span className="text-[0.55rem] uppercase font-bold text-zinc-500 tracking-[0.2em] antialiased">Assinatura do Cliente</span>
+                  </div>
+                </div>
+                <div className="flex flex-col items-center">
+                  <div className="w-[180px] border-b border-[#009353]/30 mb-2"></div>
+                  <div className="h-8 flex items-center justify-center">
+                    <span className="font-serif font-bold text-[#009353] text-[1.1rem] italic tracking-[0.05em] leading-none antialiased">VB Snooker</span>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
 
           {/* FOOTER - ALIGNED AT BOTTOM OF PAGE */}
-          <div className="doc-footer mt-auto relative py-4 px-[48px] border-t border-zinc-100 bg-[#F4F4F5] flex justify-between items-center text-[0.65rem] text-[#004a27] font-bold uppercase tracking-wider print:bg-transparent print:border-t print:border-zinc-200 print:px-[10mm] print:pb-6 flex-shrink-0">
-            <div className="flex flex-col gap-1">
-              <span>VB Snooker Comércio de Materiais Esportivos LTDA</span>
-              <span className="opacity-70 text-[0.55rem] text-zinc-800">Sorocaba-SP · Brasileira · Desde 1993</span>
+          <div className="doc-footer mt-auto relative h-[80px] px-12 border-t border-zinc-100 bg-[#F4F4F5] flex justify-between items-center text-[0.65rem] text-[#004a27] font-bold uppercase tracking-wider print:bg-transparent print:border-t print:border-zinc-200 print:px-[10mm] print:pb-[12mm] flex-shrink-0">
+            <div className="flex-1 flex flex-col justify-center gap-0.5 h-full">
+              <span className="font-bold leading-tight">VB Snooker Comércio de Materiais Esportivos LTDA</span>
+              <span className="opacity-70 text-[0.55rem] text-zinc-800 leading-tight">Sorocaba-SP · Brasileira · Desde 1993</span>
             </div>
-            <span className="font-brand font-bold text-gold text-lg opacity-50 tracking-widest italic">VB Snooker</span>
-            <span className="font-mono text-xs text-zinc-700 font-bold">{new Date().getFullYear()}</span>
+            <div className="flex-1 flex justify-center items-center h-full">
+              <span className="font-brand font-bold text-gold text-[1.25rem] opacity-60 tracking-widest italic leading-none">VB Snooker</span>
+            </div>
+            <div className="flex-1 flex justify-end items-center h-full">
+              <span className="font-mono text-xs text-zinc-700 font-bold leading-none">{new Date().getFullYear()}</span>
+            </div>
           </div>
         </div>
       </div>

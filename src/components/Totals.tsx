@@ -6,9 +6,10 @@ interface Props {
   discount: string | number;
   onDiscountChange: (val: string) => void;
   isCompressed?: boolean;
+  isExporting?: boolean;
 }
 
-const Totals: React.FC<Props> = ({ subtotal, discount, onDiscountChange, isCompressed }) => {
+const Totals: React.FC<Props> = ({ subtotal, discount, onDiscountChange, isCompressed, isExporting }) => {
   const dVal = toNumber(discount);
   const grandTotal = Math.max(0, subtotal - dVal);
 
@@ -23,15 +24,19 @@ const Totals: React.FC<Props> = ({ subtotal, discount, onDiscountChange, isCompr
         <div className="flex justify-between items-center px-4">
           <span className="text-[0.62rem] uppercase font-bold text-[#3F3F46] tracking-[0.22em]">Desconto</span>
           <div className="flex items-center gap-1">
-            <span className="text-[0.75rem] font-mono font-bold text-zinc-400 hide-print">R$</span>
-            <input 
-              className={`w-20 bg-transparent border-b border-zinc-200 px-1 text-right font-mono ${isCompressed ? 'text-[0.8rem]' : 'text-[0.95rem]'} font-bold outline-none focus:border-[#12A15F] hide-print`}
-              type="text" 
-              value={discount}
-              onChange={(e) => onDiscountChange(e.target.value)}
-              placeholder="0,00"
-            />
-            <span className={`hidden print:inline font-mono ${isCompressed ? 'text-[0.8rem]' : 'text-[0.95rem]'} font-bold`}>{fmt(dVal)}</span>
+            <span className={`text-[0.75rem] font-mono font-bold text-zinc-400 ${isExporting ? 'hidden' : 'hide-print'}`}>R$</span>
+            {isExporting ? (
+              <div className={`w-20 bg-transparent px-1 text-right font-mono ${isCompressed ? 'text-[0.8rem]' : 'text-[0.95rem]'} font-bold`}>{discount}</div>
+            ) : (
+              <input 
+                className={`w-20 bg-transparent border-b border-zinc-200 px-1 text-right font-mono ${isCompressed ? 'text-[0.8rem]' : 'text-[0.95rem]'} font-bold outline-none focus:border-[#12A15F] hide-print`}
+                type="text" 
+                value={discount}
+                onChange={(e) => onDiscountChange(e.target.value)}
+                placeholder="0,00"
+              />
+            )}
+            <span className={`${isExporting ? 'inline' : 'hidden print:inline'} font-mono ${isCompressed ? 'text-[0.8rem]' : 'text-[0.95rem]'} font-bold`}>{fmt(dVal)}</span>
           </div>
         </div>
 

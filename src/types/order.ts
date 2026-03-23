@@ -13,7 +13,9 @@ export interface ClientData {
   doc: string;
   phone: string;
   email: string;
+  cep: string;
   rua: string;
+  complemento: string;
   bairro: string;
   cidade: string;
 }
@@ -25,4 +27,5 @@ export interface OrderState {
   items: OrderItem[];
   discount: number | string;
   observations: string;
+  paymentMethod: string;
 }

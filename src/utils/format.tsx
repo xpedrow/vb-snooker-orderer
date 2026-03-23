@@ -97,6 +97,14 @@ export function maskPhone(v: string): string {
 }
 
 /**
+ * Máscara para CEP
+ */
+export function maskCep(v: string): string {
+  const digits = v.replace(/\D/g, '').slice(0, 8);
+  return digits.replace(/^(\d{5})(\d)/, '$1-$2');
+}
+
+/**
  * Filtra itens vazios para impressão/exportação
  */
 export function filterVisibleItems(items: Array<{product: string, unitValue: any}>) {

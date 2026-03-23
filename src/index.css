@@ -14,14 +14,14 @@ body {
 
 /* Document Page base */
 .document-page {
-  width: 100%;
-  max-width: 800px;
+  width: 800px;
   min-height: 1122px;
-  @apply bg-white mx-auto my-5 relative flex flex-col justify-between;
-  box-shadow:
-    0 0 0 1px rgba(18, 161, 95, .16),
-    0 6px 50px rgba(0, 0, 0, .42),
-    0 2px 6px rgba(0, 0, 0, .22);
+  background-color: white;
+  margin: 0 auto;
+  box-shadow: 0 0 40px rgba(0,0,0,0.15);
+  position: relative;
+  display: flex;
+  flex-direction: column;
 }
 
 .document-page::before {
@@ -30,9 +30,28 @@ body {
   left: 0;
   top: 0;
   bottom: 0;
-  width: 10px;
+  width: 5px;
   background-color: #009353;
   z-index: 9999;
+}
+
+/* Export Mode overrides for HTML2Canvas perfection */
+.export-mode {
+  transform: none !important;
+  box-shadow: none !important;
+  margin: 0 !important;
+}
+
+.export-mode .doc-hdr,
+.export-mode .doc-band,
+.export-mode .print-content-area,
+.export-mode .doc-footer {
+  width: 100% !important;
+  min-width: 100% !important;
+  max-width: none !important;
+  margin: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
 }
 
 @media print {
@@ -65,7 +84,7 @@ body {
   }
 
   #section-to-print {
-    position: fixed !important;
+    position: relative !important;
     left: 0 !important;
     top: 0 !important;
     margin: 0 !important;
@@ -73,11 +92,9 @@ body {
     width: 210mm !important;
     height: 297mm !important;
     max-height: 297mm !important;
-    max-width: none !important;
-    display: flex !important;
-    flex-direction: column !important;
-    background: white !important;
     overflow: hidden !important;
+    margin: 0 !important;
+    background: white !important;
     box-shadow: none !important;
     border: none !important;
     transform: none !important;
@@ -95,7 +112,7 @@ body {
     top: 0;
     left: 0;
     bottom: 0;
-    width: 15px;
+    width: 5px;
     background-color: #009353 !important;
     z-index: 9999;
     -webkit-print-color-adjust: exact !important;
@@ -110,8 +127,8 @@ body {
     left: 0 !important;
     right: 0 !important;
     position: relative !important;
-    padding-left: 50px !important;
-    padding-right: 20px !important;
+    padding-left: 10mm !important;
+    padding-right: 10mm !important;
     box-sizing: border-box !important;
   }
 
@@ -121,9 +138,9 @@ body {
     flex-grow: 1 !important;
     display: flex !important;
     flex-direction: column !important;
-    padding-bottom: 25mm !important;
-    /* Space for the absolute footer */
-    gap: 1mm !important;
+    padding-bottom: 30mm !important;
+    /* Reduced margin for footer */
+    gap: 0.5mm !important;
   }
 
   /* Content inner alignment */
@@ -208,7 +225,7 @@ body {
     left: 0 !important;
     width: 100% !important;
     min-width: 0 !important;
-    padding: 4mm 20px 6mm 50px !important;
+    padding: 4mm 10mm 6mm 10mm !important;
     background: #f4f4f5 !important;
     border-top: 1px solid #eee !important;
     box-sizing: border-box !important;
@@ -226,11 +243,6 @@ body {
     margin: 0 !important;
     width: 100% !important;
     max-width: none !important;
-  }
-
-  .section,
-  .ot-row {
-    margin-left: 40px !important;
   }
 }
 

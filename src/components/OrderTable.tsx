@@ -35,7 +35,7 @@ const OrderTable: React.FC<Props> = ({ items, onUpdate, onAdd, onRemove, isExpor
               <th className="p-[8px_13px] text-right w-[110px]">Valor Unit.</th>
               <th className="p-[8px_13px] text-center w-[55px]">Qtd.</th>
               <th className="p-[8px_13px] text-right w-[125px]">Total</th>
-              <th className="p-[8px_13px] w-[40px] hide-print"></th>
+              <th className={`p-[8px_13px] w-[40px] ${isExporting ? 'hidden' : 'hide-print'}`}></th>
             </tr>
           </thead>
           <tbody>
@@ -44,7 +44,7 @@ const OrderTable: React.FC<Props> = ({ items, onUpdate, onAdd, onRemove, isExpor
               return (
                 <tr
                   key={item.id}
-                  className={`ot-row group transition-colors border-b border-[#e0dbd0] odd:bg-white even:bg-[#F4F4F5] hover:bg-[#eeeae0] ${isItemEmpty ? 'print:hidden' : ''}`}
+                  className={`ot-row group transition-colors border-b border-[#e0dbd0] odd:bg-white even:bg-[#F4F4F5] hover:bg-[#eeeae0] ${isItemEmpty ? (isExporting ? 'hidden' : 'print:hidden') : ''}`}
                 >
                   <td className={`${rowPadding} vertical-middle`}>
                     <div className={`${isCompressed ? 'w-[18px] h-[18px]' : 'w-[22px] h-[22px]'} rounded-full bg-[#0A0A0A] text-[#12A15F] font-mono ${isCompressed ? 'text-[0.55rem]' : 'text-[0.62rem]'} flex items-center justify-center m-auto`}>
@@ -74,27 +74,35 @@ const OrderTable: React.FC<Props> = ({ items, onUpdate, onAdd, onRemove, isExpor
                     </span>
                   </td>
                   <td className={`${rowPadding} vertical-middle`}>
-                    <input
-                      className={`w-full bg-transparent p-1 ${fontSize} text-right font-mono text-black outline-none focus:bg-white focus:border-b focus:border-[#12A15F] transition-all`}
-                      type="text"
-                      value={item.unitValue}
-                      onChange={(e) => onUpdate(item.id, 'unitValue', e.target.value)}
-                      placeholder={isExporting ? "" : "0,00"}
-                    />
+                    {isExporting ? (
+                      <div className={`w-full bg-transparent p-1 ${fontSize} text-right font-mono text-black min-h-[1.8rem]`}>{item.unitValue}</div>
+                    ) : (
+                      <input
+                        className={`w-full bg-transparent p-1 ${fontSize} text-right font-mono text-black outline-none focus:bg-white focus:border-b focus:border-[#12A15F] transition-all`}
+                        type="text"
+                        value={item.unitValue}
+                        onChange={(e) => onUpdate(item.id, 'unitValue', e.target.value)}
+                        placeholder="0,00"
+                      />
+                    )}
                   </td>
                   <td className={`${rowPadding} vertical-middle`}>
-                    <input
-                      className={`w-full bg-transparent p-1 ${fontSize} text-center font-mono text-black outline-none focus:bg-white focus:border-b focus:border-[#12A15F] transition-all`}
-                      type="text"
-                      value={item.quantity}
-                      onChange={(e) => onUpdate(item.id, 'quantity', e.target.value)}
-                      placeholder={isExporting ? "" : "1"}
-                    />
+                    {isExporting ? (
+                      <div className={`w-full bg-transparent p-1 ${fontSize} text-center font-mono text-black min-h-[1.8rem]`}>{item.quantity}</div>
+                    ) : (
+                      <input
+                        className={`w-full bg-transparent p-1 ${fontSize} text-center font-mono text-black outline-none focus:bg-white focus:border-b focus:border-[#12A15F] transition-all`}
+                        type="text"
+                        value={item.quantity}
+                        onChange={(e) => onUpdate(item.id, 'quantity', e.target.value)}
+                        placeholder="1"
+                      />
+                    )}
                   </td>
                   <td className={`${rowPadding} vertical-middle ${fontSize} text-right font-mono font-bold text-[#0E844E]`}>
                     {fmt(toNumber(item.unitValue) * toNumber(item.quantity))}
                   </td>
-                  <td className={`${rowPadding} vertical-middle hide-print`}>
+                  <td className={`${rowPadding} vertical-middle ${isExporting ? 'hidden' : 'hide-print'}`}>
                     <button
                       onClick={() => onRemove(item.id)}
                       className={`${isCompressed ? 'w-[22px] h-[22px]' : 'w-[26px] h-[26px]'} rounded-full border border-red-200 text-red-600 flex items-center justify-center hover:bg-red-50 opacity-0 group-hover:opacity-100 transition-all`}
@@ -111,7 +119,7 @@ const OrderTable: React.FC<Props> = ({ items, onUpdate, onAdd, onRemove, isExpor
 
       <button
         onClick={onAdd}
-        className="mt-6 flex items-center gap-3 text-[0.7rem] font-black text-[#12A15F] uppercase tracking-widest hover:text-gold-hi transition-colors hide-print group"
+        className={`mt-6 ${isExporting ? 'hidden' : 'flex'} items-center gap-3 text-[0.7rem] font-black text-[#12A15F] uppercase tracking-widest hover:text-gold-hi transition-colors group`}
       >
         <div className="w-8 h-8 border-2 border-[#12A15F40] text-[#12A15F] flex items-center justify-center rounded-full group-hover:border-[#12A15F] transition-all">
           <Plus size={18} strokeWidth={3} />
