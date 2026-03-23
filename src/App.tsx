@@ -371,7 +371,7 @@ const App: React.FC = () => {
         >
           {getPages(state.items).map((page, idx) => (
             <div key={idx} className="document-page print-break-after">
-              <div className="flex flex-col flex-1 w-full min-w-full">
+              <div className="flex flex-col w-full min-w-full">
                 <Header />
 
                 {/* TITLE BAND - EXACT BRAND GREEN */}
@@ -391,14 +391,14 @@ const App: React.FC = () => {
                   </div>
                 </div>
 
-                <div className={`print-content-area flex flex-col flex-1 py-2 px-12 bg-white print:px-[10mm] print:pt-2 print:pb-[30mm] ${state.items.length > 8 ? 'gap-0' : 'gap-2'}`}>
+                <div className={`print-content-area flex flex-col py-2 px-12 bg-white print:px-[10mm] print:pt-2 print:pb-[30mm] ${state.items.length > 8 ? 'gap-0' : 'gap-2'}`}>
                   {page.hasClient && (
                     <div className="flex-shrink-0">
                       <ClientInfo data={state.client} onChange={handleClientChange} isExporting={isExporting} />
                     </div>
                   )}
 
-                  <div className="flex-grow flex flex-col min-h-0">
+                  <div className="flex flex-col">
                     <OrderTable
                       items={page.items}
                       startIndex={page.startIndex}
