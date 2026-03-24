@@ -2,7 +2,7 @@ import React from 'react';
 
 const Header: React.FC = () => {
   return (
-    <div className="doc-hdr bg-gradient-to-r from-black via-[#1a1a1a] to-black text-white pt-6 pb-4 px-12 flex justify-between items-center border-b-[2px] border-[#12A15F] relative overflow-hidden flex-shrink-0">
+    <div className="doc-hdr bg-gradient-to-r from-black via-[#1a1a1a] to-black text-white pt-4 pb-3 px-12 flex justify-between items-center border-b-[2px] border-[#12A15F] relative overflow-hidden flex-shrink-0">
       {/* subtle atmospheric glows overlay */}
       <div className="absolute inset-0 pointer-events-none opacity-30 select-none">
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_58%_120%_at_82%_50%,rgba(0,140,74,0.3)_0%,transparent_62%)]"></div>

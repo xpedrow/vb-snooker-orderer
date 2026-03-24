@@ -48,7 +48,6 @@ body {
 
 .export-mode .doc-hdr,
 .export-mode .doc-band,
-.export-mode .print-content-area,
 .export-mode .doc-footer {
   width: 100% !important;
   min-width: 100% !important;
@@ -56,6 +55,30 @@ body {
   margin: 0 !important;
   left: 0 !important;
   right: 0 !important;
+  padding-left: 10mm !important;
+  padding-right: 10mm !important;
+  box-sizing: border-box !important;
+}
+
+.export-mode .print-content-area {
+  width: 100% !important;
+  padding-bottom: 30mm !important;
+  gap: 0.5mm !important;
+}
+
+.export-mode .print-content-area>div {
+  padding-left: 10mm !important;
+  padding-right: 10mm !important;
+}
+
+/* Ensure fields look like print in export mode */
+.export-mode input,
+.export-mode textarea,
+.export-mode .doc-field {
+  border: none !important;
+  background: transparent !important;
+  outline: none !important;
+  box-shadow: none !important;
 }
 
 @media print {

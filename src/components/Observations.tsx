@@ -11,7 +11,7 @@ interface Props {
 
 const Observations: React.FC<Props> = ({ value, paymentMethod, onChange, onPaymentChange, isExporting }) => {
   return (
-    <div className="section mt-2 flex-shrink-0 flex flex-col">
+    <div className="section mt-2 flex flex-col">
       <div className="sec-title flex items-center gap-3 mb-2">
         <span className="text-[0.62rem] font-extrabold text-[#3F3F46] uppercase tracking-[0.22em]">Observações Adicionais</span>
         <div className="flex-1 h-[1px] bg-gradient-to-r from-[#008c4a26] to-transparent"></div>
@@ -20,7 +20,7 @@ const Observations: React.FC<Props> = ({ value, paymentMethod, onChange, onPayme
         contentEditable={!isExporting}
         suppressContentEditableWarning={true}
         className="w-full bg-[#f8f8f8] border border-zinc-100 p-4 rounded-lg text-[0.75rem] text-zinc-700 italic font-medium leading-tight focus:bg-white focus:border-[#12A15F] outline-none transition-all shadow-inner flex-1 whitespace-normal break-words overflow-wrap-anywhere pr-[5px] doc-field"
-        style={{ height: 'auto', minHeight: '50px' }}
+        style={{ height: 'auto', minHeight: '180px' }}
         onBlur={(e) => onChange(formatSentence(e.currentTarget.innerText))}
         data-placeholder={isExporting ? "" : "Informações sobre prazo, montagem ou frete..."}
       >

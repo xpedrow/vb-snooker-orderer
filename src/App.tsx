@@ -46,10 +46,10 @@ const getPages = (items: OrderItem[]): OrderPage[] => {
 
   while (remaining.length > 0 || pageIndex === 0) {
     const isFirst = pageIndex === 0;
-    
+
     // Capacities for A4 (Conservative to allow multiple-line descriptions)
-    const CAP_FULL = isFirst ? 14 : 18; 
-    const CAP_WITH_TOTALS = isFirst ? 8 : 12; 
+    const CAP_FULL = isFirst ? 14 : 18;
+    const CAP_WITH_TOTALS = isFirst ? 5 : 9;
 
     let chunk = [];
     let putTotalsHere = false;
@@ -73,7 +73,7 @@ const getPages = (items: OrderItem[]): OrderPage[] => {
       totalPages: 0,
       startIndex: itemsProcessed
     });
-    
+
     itemsProcessed += chunk.length;
 
     if (remaining.length === 0 && !putTotalsHere) {
@@ -229,9 +229,9 @@ const App: React.FC = () => {
 
   const handleSavePDF = async () => {
     if (!componentRef.current) return;
-    
+
     setIsExporting(true);
-    
+
     // Proactive Sanitization
     setState(prev => ({
       ...prev,
@@ -259,25 +259,25 @@ const App: React.FC = () => {
 
     try {
       const element = componentRef.current;
-      
+
       const originalStyle = element.getAttribute('style') || '';
       element.classList.add('export-mode');
-      
+
       const pdf = new jsPDF({
         orientation: 'portrait',
         unit: 'mm',
         format: 'a4'
       });
-      
+
       const pageNodes = element.querySelectorAll('.document-page');
-      
+
       for (let i = 0; i < pageNodes.length; i++) {
         const pageEl = pageNodes[i] as HTMLElement;
         const pageStyle = pageEl.getAttribute('style') || '';
-        
-        // Force element to 800px to prevent horizontal squashing/stretching
-        pageEl.setAttribute('style', `${pageStyle} width: 800px !important; max-width: 800px !important; min-width: 800px !important;`);
-        
+
+        // Force element to 800x1122px (Standard A4 ratio in pixels) to ensure full page capture
+        pageEl.setAttribute('style', `${pageStyle} width: 800px !important; height: 1122px !important; max-width: 800px !important; min-width: 800px !important;`);
+
         const canvas = await html2canvas(pageEl, {
           scale: 2,
           useCORS: true,
@@ -285,35 +285,35 @@ const App: React.FC = () => {
           backgroundColor: '#ffffff',
           windowWidth: 800
         });
-        
+
         pageEl.setAttribute('style', pageStyle);
-        
+
         if (i > 0) {
           pdf.addPage();
         }
-        
+
         const imgData = canvas.toDataURL('image/png');
         const pdfWidth = pdf.internal.pageSize.getWidth();
         const pdfPageHeight = pdf.internal.pageSize.getHeight();
-        
+
         let finalWidth = pdfWidth;
         let finalHeight = (canvas.height * pdfWidth) / canvas.width;
-        
+
         // FORCE TO SINGLE PAGE (Per Chunk): scale it down to fit perfectly if slightly over
         if (finalHeight > pdfPageHeight) {
           const ratio = pdfPageHeight / finalHeight;
           finalWidth *= ratio;
           finalHeight = pdfPageHeight;
         }
-        
+
         const xOffset = (pdfWidth - finalWidth) / 2;
         pdf.addImage(imgData, 'PNG', xOffset, 0, finalWidth, finalHeight);
       }
-      
+
       element.classList.remove('export-mode');
-      
+
       pdf.save(`VB_Snooker_Pedido_${state.orderNumber}.pdf`);
-      
+
       saveToHistory();
       incrementOrder();
     } catch (error) {
